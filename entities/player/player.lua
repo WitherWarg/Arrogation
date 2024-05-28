@@ -6,7 +6,7 @@ local Player = Class {
     is_state_complete = true,
 }
 
-local consts = {
+local const = {
     run_speed = 260,
     accel = 5,
     decel = 5,
@@ -26,15 +26,15 @@ local consts = {
 }
 
 function loadAnimations()
-    consts.ox, consts.oy = consts.frame_width / 2 - consts.sprite_width / 2, consts.frame_height - consts.height / 2
+    const.ox, const.oy = const.frame_width / 2 - const.sprite_width / 2, const.frame_height - const.height / 2
 
-    local sheet_width, sheet_height = consts.sprite_sheet:getDimensions()
-    local grid = anim8.newGrid(consts.frame_width, consts.frame_height, sheet_width, sheet_height)
+    local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
+    local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)
 
-    for name, data in pairs(consts.animations) do
-        consts.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-        consts.animations[name].flippedH = data.flippedH or false
-        consts.animations[name].position = data.position
+    for name, data in pairs(const.animations) do
+        const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
+        const.animations[name].flippedH = data.flippedH or false
+        const.animations[name].position = data.position
     end
 end
 
@@ -46,11 +46,11 @@ local selectState
 local direction
 
 function Player:init(x, y)
-    Entity.init(self, x, y, consts.width * consts.sprite_scale, consts.height * consts.sprite_scale)
+    Entity.init(self, x, y, const.width * const.sprite_scale, const.height * const.sprite_scale)
 
     self.collider:setMass(1)
 
-    self.animation = consts.animations.idle
+    self.animation = const.animations.idle
 end
 
 function Player:update(dt)
@@ -81,12 +81,12 @@ end
 function run(self)
     local vx, _ = player.collider:getLinearVelocity()
     local ix = player:getInputX()
-    local rate_of_change = ix ~= 0 and consts.accel or consts.decel
-    local force = rate_of_change * (consts.run_speed * ix - vx)
+    local rate_of_change = ix ~= 0 and const.accel or const.decel
+    local force = rate_of_change * (const.run_speed * ix - vx)
     
     player.collider:applyForce(force, 0)
 
-    player.collider:applyForce(force * consts.friction, 0)
+    player.collider:applyForce(force * const.friction, 0)
 end
 
 function groundState(self)
@@ -120,7 +120,7 @@ function selectState(self)
                 self.is_state_complete = false
                 self.state = 'turn'
 
-                timer.after(consts.animations.turn.totalDuration, function ()
+                timer.after(const.animations.turn.totalDuration, function ()
                     self.is_state_complete = true
                 end)
             end
@@ -128,7 +128,7 @@ function selectState(self)
     end
 
     if self.state ~= last then
-        self.animation = consts.animations[self.state]:clone()
+        self.animation = const.animations[self.state]:clone()
     end
 end
 
@@ -144,9 +144,9 @@ end
 
 function Player:draw()
     local x, y = player.collider:getPosition()
-    local sprite_scale = self.direction * consts.sprite_scale
+    local sprite_scale = self.direction * const.sprite_scale
     
-    self.animation:draw(consts.sprite_sheet, x, y, nil, sprite_scale, consts.sprite_scale, consts.ox, consts.oy)
+    self.animation:draw(const.sprite_sheet, x, y, nil, sprite_scale, const.sprite_scale, const.ox, const.oy)
 end
 
 return Player

@@ -16,6 +16,10 @@ function Level:enter()
     local Camera = require('libraries.camera')
     camera = Camera{ scale = WORLD_SCALE, mode = 'all' }
 
+    local Border = require('entities.border')
+    Border(-1, 0, 1, love.graphics.getHeight())
+    Border(floor.width, 0, 1, love.graphics.getHeight())
+
     background = love.graphics.newImage('rdm_back.png')
 
     pause = false
