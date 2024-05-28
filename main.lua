@@ -17,6 +17,7 @@ function love.load()
     require('utilities.table')
     require('utilities.input')
     require('utilities.debug')
+    require('utilities.world')
 
     Level = require('gamestates.level')
     

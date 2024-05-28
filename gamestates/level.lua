@@ -5,8 +5,7 @@ function Level:enter()
     WORLD_WIDTH = love.graphics.getWidth() / WORLD_SCALE
     WORLD_HEIGHT = love.graphics.getHeight() / WORLD_SCALE
 
-    local wf = require('libraries.windfield')
-    world = wf.newWorld(0, 2000)
+    world = newWorld('wall', 'player')
 
     local Player = require('entities.player.player')
     player = Player(100, love.graphics.getHeight() - 100)
@@ -33,6 +32,7 @@ function Level:update(dt)
         return
     end
 
+    timer.update(dt)
     world:update(dt)
     player:update(dt)
 

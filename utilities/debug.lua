@@ -1,5 +1,3 @@
----@diagnostic disable: deprecated
-
 local font = love.graphics.newFont(30)
 local margin = 20
 
