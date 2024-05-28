@@ -10,9 +10,13 @@ function love.load()
     Class = require('libraries/class')
     timer = require('libraries/timer')
     vector = require('libraries/vector')
+    anim8 = require('libraries.anim8')
     hsl = require('libraries/hsl')
 
     require('utilities.math')
+    require('utilities.table')
+    require('utilities.input')
+    require('utilities.debug')
 
     Level = require('gamestates.level')
     

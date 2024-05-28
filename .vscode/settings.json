@@ -1,9 +1,30 @@
 {
     "Lua.diagnostics.globals": [
-        "love"
+        "love",
+        "merge"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global",
         "trailing-space"
-    ]
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#000068",
+        "activityBar.background": "#000068",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#9f0000",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#000068",
+        "statusBar.background": "#000035",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#000068",
+        "statusBarItem.remoteBackground": "#000035",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#000035",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#00003599",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#000035"
 }

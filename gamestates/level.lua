@@ -8,29 +8,48 @@ function Level:enter()
     local wf = require('libraries.windfield')
     world = wf.newWorld(0, 2000)
 
-    local Player = require('entities.player')
+    local Player = require('entities.player.player')
     player = Player(100, love.graphics.getHeight() - 100)
 
     local Wall = require('entities.wall')
     floor = Wall(0, love.graphics.getHeight() - 50, love.graphics.getWidth(), 50)
 
     local Camera = require('libraries.camera')
-    camera = Camera{ scale = WORLD_SCALE }
+    camera = Camera{ scale = WORLD_SCALE, mode = 'all' }
+
+    background = love.graphics.newImage('rdm_back.png')
+
+    pause = false
 end
 
 function Level:update(dt)
-    world:update(dt)
+    love.keyboard.update()
 
-    local x = math.clamp(player.x, WORLD_WIDTH / 2, floor.width - WORLD_WIDTH / 2)
-    local y = math.min(player.y, WORLD_HEIGHT * 3 / 2)
+    if input("pause") then
+        pause = not pause
+    end
+
+    if pause then
+        return
+    end
+
+    world:update(dt)
+    player:update(dt)
+
+    local x = math.clamp(player.collider:getX(), WORLD_WIDTH / 2, floor.width - WORLD_WIDTH / 2)
+    local y = math.min(player.collider:getY(), WORLD_HEIGHT * 3 / 2)
     camera:setTranslation(x, y)
 end
 
 function Level:draw()
     camera:push()
     
+    love.graphics.draw(background, floor.x, floor.y + floor.height, nil, 0.4, nil, nil, background:getHeight())
+
+    player:draw()
+
     world:draw()
-    
+
     camera:pop()
 end
 
