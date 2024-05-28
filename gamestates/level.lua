@@ -13,8 +13,8 @@ function Level:enter()
     local Wall = require('entities.wall')
     floor = Wall(0, love.graphics.getHeight() - 50, love.graphics.getWidth(), 50)
 
-    local Camera = require('libraries.camera')
-    camera = Camera{ scale = WORLD_SCALE, mode = 'all' }
+    local CameraManager = require('camera_manager')
+    camera_manager = CameraManager(WORLD_SCALE)
 
     local Border = require('entities.border')
     Border(-1, 0, 1, love.graphics.getHeight())
@@ -39,14 +39,11 @@ function Level:update(dt)
     timer.update(dt)
     world:update(dt)
     player:update(dt)
-
-    local x = math.clamp(player.collider:getX(), WORLD_WIDTH / 2, floor.width - WORLD_WIDTH / 2)
-    local y = math.min(player.collider:getY(), WORLD_HEIGHT * 3 / 2)
-    camera:setTranslation(x, y)
+    camera_manager:update()
 end
 
 function Level:draw()
-    camera:push()
+    camera_manager:push()
     
     love.graphics.draw(background, floor.x, floor.y + floor.height, nil, 0.4, nil, nil, background:getHeight())
 
@@ -54,7 +51,7 @@ function Level:draw()
 
     world:draw()
 
-    camera:pop()
+    camera_manager:pop()
 end
 
 function Level:leave()
