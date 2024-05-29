@@ -1,7 +1,9 @@
 {
     "Lua.diagnostics.globals": [
         "love",
-        "merge"
+        "merge",
+        "class_commons",
+        "settings"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global",

@@ -300,7 +300,7 @@ function World:generateCategoriesMasks()
                     table.insert(expanded[object_type], ignored_type)
                 end
             end
-            if key == 'except' then
+            if key == 'except' and type(ignored_type) == 'table' then
                 for _, except_ignored_type in ipairs(ignored_type) do
                     for i, v in ipairs(incoming[except_ignored_type]) do
                         if v == object_type then
