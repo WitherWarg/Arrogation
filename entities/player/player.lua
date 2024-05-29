@@ -12,7 +12,7 @@ local const = {
     decel = 5,
     friction = 2.1,
 
-    sprite_scale = 1.5,
+    sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
     frame_width = 120, frame_height = 80,
     sprite_width = 20, sprite_height = 38,
@@ -26,7 +26,8 @@ local const = {
 }
 
 function loadAnimations()
-    const.ox, const.oy = const.frame_width / 2 - const.sprite_width / 2, const.frame_height - const.height / 2
+    const.ox = const.frame_width / 2 - const.sprite_width / 2
+    const.oy = const.frame_height - const.height / 2 - 1
 
     local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
     local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)

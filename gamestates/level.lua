@@ -3,7 +3,7 @@ local Level = {}
 function Level:enter(last, level_name)
     self.last = last
 
-    local WORLD_SCALE = 2
+    local WORLD_SCALE = 3
     WORLD_WIDTH = love.graphics.getWidth() / WORLD_SCALE
     WORLD_HEIGHT = love.graphics.getHeight() / WORLD_SCALE
 
