@@ -13,6 +13,9 @@ function love.load()
     anim8 = require('libraries.anim8')
     hsl = require('libraries/hsl')
 
+    -- Timer data type
+    TIMER = timer.after(0, function() end)
+
     require('utilities.math')
     require('utilities.table')
     require('utilities.input')

@@ -3,7 +3,12 @@ local Entity = require('entities.entity')
 local Player = Class {
     state = '',
     direction = 1,
-    is_state_complete = true,
+    can_switch_state = true,
+    
+    is_jump_registered = false,
+    jump_timer = TIMER,
+    is_grounded_registered = false,
+    ground_timer = TIMER,
 }
 
 local const = {
@@ -11,6 +16,14 @@ local const = {
     accel = 5,
     decel = 5,
     friction = 2.1,
+
+    turn_threshold = 30,
+
+    jump_velocity = -490,
+    jump_halt_power = 0.7,
+
+    jump_buffer = 0.03,
+    ground_buffer = 0.05,
 
     sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
@@ -22,6 +35,8 @@ local const = {
         idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
         run = { frames = 10, row = 21, durations = 0.1 },
         turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', flippedH = true, position = 3 },
+        jump = { frames = 3, row = 18, durations = 0.1 },
+        fall = { frames = 3, row = 15, durations = 0.1 },
     },
 }
 
@@ -42,8 +57,9 @@ end
 loadAnimations()
 
 local run
-local groundState
-local selectState
+local jump
+local isGroundedCheck
+local switchState
 local direction
 
 function Player:init(x, y)
@@ -56,12 +72,13 @@ function Player:init(x, y)
 end
 
 function Player:update(dt)
-    groundState(self)
-    selectState(self)
+    isGroundedCheck(self)
+    switchState(self)
 
     direction(self)
 
     run(self)
+    jump(self)
 
     self.animation:update(dt)
 end
@@ -91,41 +108,83 @@ function run(self)
     player.collider:applyForce(force * const.friction, 0)
 end
 
-function groundState(self)
-    local width, height = self.width, 1
-    local x, y = self.collider:getX() - width / 2, self.collider:getY() + self.height / 2 - height/2
-    self.is_grounded = #world:queryRectangleArea(x, y, width, height, {'wall'}) > 0
+function jump(self)
+    if input("jump") then
+        self.is_jump_registered = true
+
+        timer.after(const.jump_buffer, function ()
+            self.is_jump_registered = false
+        end)
+    end
+
+    if self.is_jump_registered and self.is_grounded_registered then
+        self.is_jump_registered, self.is_grounded_registered = false, false
+
+        local vx, _ = player.collider:getLinearVelocity()
+        player.collider:setLinearVelocity(vx, 0)
+
+        if player.is_grounded then
+            player.collider:applyLinearImpulse(0, const.jump_velocity)
+        end
+    end
+
+    if input("jump", "isReleased") then
+        local _, vy = player.collider:getLinearVelocity()
+        player.collider:applyLinearImpulse(0, -vy * const.jump_halt_power)
+    end
 end
 
-function selectState(self)
-    if not self.is_state_complete then
+function isGroundedCheck(self)
+    local width, height = self.width, 1
+    local x, y = self.collider:getX() - width / 2, self.collider:getY() + self.height / 2
+    self.is_grounded = #world:queryRectangleArea(x, y, width, height, {'wall'}) > 0
+
+    if self.is_grounded then
+        self.is_grounded_registered = true
+
+        timer.cancel(self.ground_timer)
+
+        self.ground_timer = timer.after(const.ground_buffer, function ()
+            self.is_grounded_registered = false
+        end)
+    end
+end
+
+function switchState(self)
+    if not self.can_switch_state then
         return
     end
 
     local last = self.state
     local ix = player:getInputX()
-    local vx, _ = player.collider:getLinearVelocity()
+    local vx, vy = player.collider:getLinearVelocity()
 
     if self.is_grounded then
-        if self.state ~= 'idle' and ix == 0 then
-            self.state = 'idle'
-            self.is_state_complete = true
-        end
-        
-        if ix ~= 0 then
-            if self.state ~= 'run' then
-                self.state = 'run'
-                self.is_state_complete = true
-            end
+        self.state = 'idle'
+        self.can_switch_state = true
 
-            if ix ~= math.sign(vx) and math.sign(vx) ~= 0 then
-                self.is_state_complete = false
+        if ix ~= 0 then
+            self.state = 'run'
+            self.can_switch_state = true
+
+            if ix == -math.sign(vx) and math.abs(vx) > const.turn_threshold then
+                self.can_switch_state = false
                 self.state = 'turn'
 
                 timer.after(const.animations.turn.totalDuration, function ()
-                    self.is_state_complete = true
+                    self.can_switch_state = true
                 end)
             end
+        end
+    end
+
+    if not self.is_grounded then
+        self.state = 'jump'
+        self.can_switch_state = true            
+
+        if vy > 0 then
+            self.can_switch_state = true
+            self.state = 'fall'
         end
     end
 
