@@ -13,7 +13,7 @@ function MapManager:init(name)
         table.insert(self.update_objects, player)
     end
 
-    self.main_player = self.players[math.random(0, #self.players)]
+    self.main_player = self.players[math.random(1, #self.players)]
 
     self.walls = {}
     local Wall = require('entities.wall')

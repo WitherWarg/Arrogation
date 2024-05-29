@@ -13,7 +13,7 @@ local STI = {
 }
 STI.__index = STI
 
-local love  = _G.love
+local love  = love
 local cwd   = (...):gsub('%.init$', '') .. "."
 local utils = require(cwd .. "utils")
 local ceil  = math.ceil
@@ -956,7 +956,7 @@ function Map.drawLayer(_, layer)
 		lg.setColor(r/255, g/255, b/255, a/255) -- Tiled uses 0-255
 	-- if a tintcolor is not given just use the current color
 	else
-		lg.setColor(r, g, b, a * layer.opacity)
+		lg.setColor(r, g, b, a * (layer.opacity or 1))
 	end
 	layer:draw()
 	lg.setColor(r,g,b,a)

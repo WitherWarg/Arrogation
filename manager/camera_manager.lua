@@ -9,10 +9,16 @@ function CameraManager:init(scale, map_manager)
     self.map = map_manager.map
     self.layers = {}
 
+    local i = 0
+
     for _, layer in ipairs(map_manager.map.layers) do
         if layer.type == 'tilelayer' then
             self.main_camera:addLayer(layer.name, 1, { relativeScale = layer.parallaxx })
             table.insert(self.layers, layer)
+
+            if not string.find(layer.name, 'foreplayer') then
+                i = i + 1
+            end
         end
     end
 
@@ -27,11 +33,10 @@ function CameraManager:init(scale, map_manager)
         self.bottom = math.max(self.bottom, border.y)
     end
 
-    -- for _, player in ipairs(map_manager.players) do
-    --     table.print(table.merge(player, { opacity = 1 }))
-    --     table.print(player)
-    --     table.insert(self.layers, table.merge(player, { opacity = 1 }))
-    -- end
+    for _, player in ipairs(map_manager.players) do
+        table.insert(self.layers, i, player)
+        i = i + 1
+    end
 end
 
 function CameraManager:follow(x, y)
@@ -49,11 +54,11 @@ end
 
 function CameraManager:draw()
     for _, layer in ipairs(self.layers) do
-            self.main_camera:push(layer.name)
+        self.main_camera:push(layer.name)
 
-            self.map:drawLayer(layer)
+        self.map:drawLayer(layer)
 
-            self.main_camera:pop()           
+        self.main_camera:pop()           
     end
 end
 

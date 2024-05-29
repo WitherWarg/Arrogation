@@ -1,30 +1,27 @@
 function table.print(t, keys)
     local output = ""
-    local i = 0
-    for key, value in pairs(t) do
-        i = i + 1
-        output = output .. key .. ': ' .. tostring(value)
+
+    for key1, value in pairs(t) do
+        output = output .. key1 .. ': ' .. tostring(value)
 
         if keys and #keys > 0 then
-            for _, key in ipairs(keys) do
-                output = output .. ', ' .. value[key]
+            for _, key2 in ipairs(keys) do
+                output = output .. ', ' .. value[key2]
             end
         end
         
-        if i < #t then
-            output = output .. '\n'            
-        end
+        output = output .. '\n'
     end
 
-    print(output)
+    print(string.sub(output, 1, -2))
 end
 
 function table.merge(...)
     local result = {}
 
     for _, t in ipairs({...}) do
-        for _, value in ipairs(t) do
-            table.insert(result, value)
+        for key, value in pairs(t) do
+            result[key] = value
         end
     end
 

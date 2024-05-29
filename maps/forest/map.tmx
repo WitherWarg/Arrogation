@@ -654,9 +654,6 @@
    <object id="12" x="464" y="848">
     <point/>
    </object>
-   <object id="147" x="549" y="849">
-    <point/>
-   </object>
   </objectgroup>
   <objectgroup id="34" name="wall">
    <object id="68" x="368" y="848" width="1072" height="64"/>

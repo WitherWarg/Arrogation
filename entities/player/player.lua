@@ -1,5 +1,20 @@
 local Entity = require('entities.entity')
 
+local Player = Class {
+    state = '',
+    direction = 1,
+    can_switch_state = true,
+    
+    is_jump_registered = false,
+    jump_timer = TIMER,
+    is_grounded_registered = false,
+    ground_timer = TIMER,
+
+    can_dash = true,
+    is_dashing = false,
+    dashes = 0,
+}
+
 local const = {
     run_speed = 260,
     accel = 5,
@@ -28,10 +43,10 @@ local const = {
     animations = {
         idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
         run = { frames = 10, row = 21, durations = 0.1 },
-        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', flippedH = true, position = 3 },
+        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', flipped = true, position = 3 },
         jump = { frames = 3, row = 18, durations = 0.1 },
         fall = { frames = 3, row = 15, durations = 0.1 },
-        dash = { frames = 2, row = 12, durations = 0.1 }
+        dash = { frames = 2, row = 12, durations = 0.1 },
     },
 }
 
@@ -44,8 +59,10 @@ function loadAnimations()
 
     for name, data in pairs(const.animations) do
         const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-        const.animations[name].flippedH = data.flippedH or false
-        const.animations[name].position = data.position
+        if data.flipped then
+            const.animations[name]:flipH()
+        end
+        const.animations[name].position = data.position or 1
     end
 end
 
@@ -55,23 +72,8 @@ local run
 local jump
 local isGroundedCheck
 local switchState
-local direction
+local setDirection
 local dash
-
-local Player = Class {
-    state = '',
-    direction = 1,
-    can_switch_state = true,
-    
-    is_jump_registered = false,
-    jump_timer = TIMER,
-    is_grounded_registered = false,
-    ground_timer = TIMER,
-
-    can_dash = true,
-    is_dashing = false,
-    dashes = const.max_dashes,
-}
 
 function Player:init(x, y)
     local height = const.height * const.sprite_scale
@@ -86,7 +88,7 @@ function Player:update(dt)
     timer.script(function (wait)
         dash(self, wait)
     end)
-
+    
     isGroundedCheck(self)
     switchState(self)
     self.animation:update(dt)
@@ -96,10 +98,10 @@ function Player:update(dt)
     end
 
     if self.is_grounded then
-        self.dashes = const.max_dashes
+        self.dashes = 0
     end
 
-    direction(self)
+    setDirection(self)
 
     run(self)
     jump(self)
@@ -120,10 +122,10 @@ function Player:getInputX()
 end
 
 function dash(self, wait)
-    if self.can_dash and input("dash") and self.dashes > 0 then
+    if self.can_dash and input("dash") and self.dashes < const.max_dashes then
         self.is_dashing = true
         self.can_dash = false
-        self.dashes = self.dashes - 1
+        self.dashes = self.dashes + 1
     
         local g = self.collider:getGravityScale()
         self.collider:setGravityScale(0)
@@ -243,11 +245,11 @@ function switchState(self)
     end
 end
 
-function direction(self)
+function setDirection(self)
     if input("right") and not input("left") then
         self.direction = 1
     end
-
+    
     if not input("right") and input("left") then
         self.direction = -1
     end
@@ -256,7 +258,7 @@ end
 function Player:draw()
     local x, y = self.collider:getPosition()
     local sprite_scale = self.direction * const.sprite_scale
-    
+
     self.animation:draw(const.sprite_sheet, x, y, nil, sprite_scale, const.sprite_scale, const.ox, const.oy)
 end
 

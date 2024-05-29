@@ -38,10 +38,6 @@ end
 
 function Level:draw()
     camera_manager:draw()
-
-    camera_manager:push()
-    world:draw()
-    camera_manager:pop()
 end
 
 function Level:leave()

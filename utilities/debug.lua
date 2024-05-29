@@ -13,11 +13,15 @@ function debug(...)
     local ouput = '%s'
 
     for i = 1, count do
-        local v = tostring(select(i, ...))
-        
-        values[i] = v
+        local value = tostring(select(i, ...))
 
-        if string.len(longest) < string.len(v) then
+        if value == '' then
+            value = 'empty_string'
+        end
+        
+        values[i] = value
+
+        if string.len(longest) < string.len(value) then
             longest = values[i]
         end
 
