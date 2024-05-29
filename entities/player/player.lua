@@ -46,7 +46,8 @@ local selectState
 local direction
 
 function Player:init(x, y)
-    Entity.init(self, x, y, const.width * const.sprite_scale, const.height * const.sprite_scale)
+    local height = const.height * const.sprite_scale
+    Entity.init(self, x, y - height, const.width * const.sprite_scale, height)
 
     self.collider:setMass(1)
 

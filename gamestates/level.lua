@@ -1,26 +1,21 @@
 local Level = {}
 
-function Level:enter()
+function Level:enter(last, level_name)
+    self.last = last
+
     local WORLD_SCALE = 2
     WORLD_WIDTH = love.graphics.getWidth() / WORLD_SCALE
     WORLD_HEIGHT = love.graphics.getHeight() / WORLD_SCALE
 
     world = newWorld('wall', 'player')
 
-    local Player = require('entities.player.player')
-    player = Player(100, love.graphics.getHeight() - 100)
+    local MapManager = require('manager.map_manager')
+    map_manager = MapManager(level_name)
 
-    local Wall = require('entities.wall')
-    floor = Wall(0, love.graphics.getHeight() - 50, love.graphics.getWidth(), 50)
+    player = map_manager.players[#map_manager.players]
 
-    local CameraManager = require('camera_manager')
-    camera_manager = CameraManager(WORLD_SCALE)
-
-    local Border = require('entities.border')
-    Border(-1, 0, 1, love.graphics.getHeight())
-    Border(floor.width, 0, 1, love.graphics.getHeight())
-
-    background = love.graphics.newImage('rdm_back.png')
+    local CameraManager = require('manager.camera_manager')
+    camera_manager = CameraManager(WORLD_SCALE, map_manager.map)
 
     pause = false
 end
@@ -39,19 +34,21 @@ function Level:update(dt)
     timer.update(dt)
     world:update(dt)
     player:update(dt)
-    camera_manager:update()
+    camera_manager:follow(player.collider:getPosition())
+    camera_manager:clamp()
 end
 
 function Level:draw()
+    camera_manager:draw('background')
+    camera_manager:draw('foreground')
+
     camera_manager:push()
     
-    love.graphics.draw(background, floor.x, floor.y + floor.height, nil, 0.4, nil, nil, background:getHeight())
-
     player:draw()
-
-    world:draw()
-
+    
     camera_manager:pop()
+
+    camera_manager:draw('foreplayer')
 end
 
 function Level:leave()

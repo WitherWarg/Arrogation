@@ -1,6 +1,6 @@
 function table.print(t)
     for key, value in pairs(t) do
-        print(key .. ':' .. tostring(value))
+        print(key .. ': ' .. tostring(value))
     end
 end
 

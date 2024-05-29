@@ -6,7 +6,7 @@ function love.load()
     -- love.mouse.setCursor(new_cursor_image)
     -- love.mouse.setVisible(false)
 
-    GS = require('libraries/gamestate') -- State Manager for game (GS for gamestate)
+    GS = require('libraries/gamestate') -- State Manager for game
     Class = require('libraries/class')
     timer = require('libraries/timer')
     vector = require('libraries/vector')
@@ -22,5 +22,5 @@ function love.load()
     Level = require('gamestates.level')
     
     GS.registerEvents{'enter', 'update', 'draw', 'leave'}
-    GS.switch(Level)
+    return GS.switch(Level, 'forest')
 end
