@@ -31,10 +31,6 @@ function Level:update(dt)
         return
     end
 
-    if input('jump') and not player.is_grounded then
-        pause = true
-    end
-
     timer.update(dt)
     world:update(dt)
     player:update(dt)
