@@ -1,31 +1,37 @@
 local CameraManager = Class {}
 
-function CameraManager:init(scale, map)
+function CameraManager:init(scale, map_manager)
     local Camera = require('libraries.camera')
 
     self.scale = scale
     self.main_camera = Camera{ scale = scale, mode = 'all' }
 
-    self.map = map
+    self.map = map_manager.map
     self.layers = {}
 
-    for _, layer in ipairs(map.layers) do
+    for _, layer in ipairs(map_manager.map.layers) do
         if layer.type == 'tilelayer' then
             self.main_camera:addLayer(layer.name, 1, { relativeScale = layer.parallaxx })
-            table.insert(self.layers, layer)       
+            table.insert(self.layers, layer)
         end
     end
 
     self.left, self.right = math.huge, 0
     self.top, self.bottom = math.huge, 0
 
-    for _, object in ipairs(map.layers["hitboxes.border"].objects) do
-        self.left = math.min(self.left, object.x)
-        self.right = math.max(self.right, object.x)
+    for _, border in ipairs(map_manager.borders) do
+        self.left = math.min(self.left, border.x)
+        self.right = math.max(self.right, border.x)
 
-        self.top = math.min(self.top, object.y)
-        self.bottom = math.max(self.bottom, object.y)
+        self.top = math.min(self.top, border.y)
+        self.bottom = math.max(self.bottom, border.y)
     end
+
+    -- for _, player in ipairs(map_manager.players) do
+    --     table.print(table.merge(player, { opacity = 1 }))
+    --     table.print(player)
+    --     table.insert(self.layers, table.merge(player, { opacity = 1 }))
+    -- end
 end
 
 function CameraManager:follow(x, y)
@@ -41,15 +47,13 @@ function CameraManager:clamp()
     self.main_camera:setTranslation(x, y)
 end
 
-function CameraManager:draw(group_layer)
+function CameraManager:draw()
     for _, layer in ipairs(self.layers) do
-        if string.find(layer.name, group_layer) then
             self.main_camera:push(layer.name)
 
             self.map:drawLayer(layer)
 
             self.main_camera:pop()           
-        end
     end
 end
 

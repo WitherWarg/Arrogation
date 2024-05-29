@@ -1,16 +1,5 @@
 local Entity = require('entities.entity')
 
-local Player = Class {
-    state = '',
-    direction = 1,
-    can_switch_state = true,
-    
-    is_jump_registered = false,
-    jump_timer = TIMER,
-    is_grounded_registered = false,
-    ground_timer = TIMER,
-}
-
 local const = {
     run_speed = 260,
     accel = 5,
@@ -25,6 +14,11 @@ local const = {
     jump_buffer = 0.03,
     ground_buffer = 0.05,
 
+    dash_time = 0.2,
+    dash_speed = 400,
+    dash_cooldown = 0.25,
+    max_dashes = 1,
+
     sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
     frame_width = 120, frame_height = 80,
@@ -37,6 +31,7 @@ local const = {
         turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', flippedH = true, position = 3 },
         jump = { frames = 3, row = 18, durations = 0.1 },
         fall = { frames = 3, row = 15, durations = 0.1 },
+        dash = { frames = 2, row = 12, durations = 0.1 }
     },
 }
 
@@ -61,6 +56,22 @@ local jump
 local isGroundedCheck
 local switchState
 local direction
+local dash
+
+local Player = Class {
+    state = '',
+    direction = 1,
+    can_switch_state = true,
+    
+    is_jump_registered = false,
+    jump_timer = TIMER,
+    is_grounded_registered = false,
+    ground_timer = TIMER,
+
+    can_dash = true,
+    is_dashing = false,
+    dashes = const.max_dashes,
+}
 
 function Player:init(x, y)
     local height = const.height * const.sprite_scale
@@ -72,15 +83,26 @@ function Player:init(x, y)
 end
 
 function Player:update(dt)
+    timer.script(function (wait)
+        dash(self, wait)
+    end)
+
     isGroundedCheck(self)
     switchState(self)
+    self.animation:update(dt)
+
+    if self.is_dashing then
+        return
+    end
+
+    if self.is_grounded then
+        self.dashes = const.max_dashes
+    end
 
     direction(self)
 
     run(self)
     jump(self)
-
-    self.animation:update(dt)
 end
 
 function Player:getInputX()
@@ -97,15 +119,39 @@ function Player:getInputX()
     return ix
 end
 
+function dash(self, wait)
+    if self.can_dash and input("dash") and self.dashes > 0 then
+        self.is_dashing = true
+        self.can_dash = false
+        self.dashes = self.dashes - 1
+    
+        local g = self.collider:getGravityScale()
+        self.collider:setGravityScale(0)
+    
+        self.collider:setLinearVelocity(0, 0)
+        self.collider:applyLinearImpulse(self.direction * const.dash_speed, 0)
+    
+        wait(const.dash_time)
+    
+        self.collider:setGravityScale(g)
+    
+        self.is_dashing = false
+
+        wait(const.dash_cooldown)
+
+        self.can_dash = true
+    end
+end
+
 function run(self)
-    local vx, _ = player.collider:getLinearVelocity()
-    local ix = player:getInputX()
+    local vx, _ = self.collider:getLinearVelocity()
+    local ix = self:getInputX()
     local rate_of_change = ix ~= 0 and const.accel or const.decel
     local force = rate_of_change * (const.run_speed * ix - vx)
     
-    player.collider:applyForce(force, 0)
+    self.collider:applyForce(force, 0)
 
-    player.collider:applyForce(force * const.friction, 0)
+    self.collider:applyForce(force * const.friction, 0)
 end
 
 function jump(self)
@@ -120,17 +166,17 @@ function jump(self)
     if self.is_jump_registered and self.is_grounded_registered then
         self.is_jump_registered, self.is_grounded_registered = false, false
 
-        local vx, _ = player.collider:getLinearVelocity()
-        player.collider:setLinearVelocity(vx, 0)
+        local vx, _ = self.collider:getLinearVelocity()
+        self.collider:setLinearVelocity(vx, 0)
 
-        if player.is_grounded then
-            player.collider:applyLinearImpulse(0, const.jump_velocity)
+        if self.is_grounded then
+            self.collider:applyLinearImpulse(0, const.jump_velocity)
         end
     end
 
     if input("jump", "isReleased") then
-        local _, vy = player.collider:getLinearVelocity()
-        player.collider:applyLinearImpulse(0, -vy * const.jump_halt_power)
+        local _, vy = self.collider:getLinearVelocity()
+        self.collider:applyLinearImpulse(0, -vy * const.jump_halt_power)
     end
 end
 
@@ -156,8 +202,8 @@ function switchState(self)
     end
 
     local last = self.state
-    local ix = player:getInputX()
-    local vx, vy = player.collider:getLinearVelocity()
+    local ix = self:getInputX()
+    local vx, vy = self.collider:getLinearVelocity()
 
     if self.is_grounded then
         self.state = 'idle'
@@ -188,6 +234,10 @@ function switchState(self)
         end
     end
 
+    if self.is_dashing then
+        self.state = 'dash'
+    end
+
     if self.state ~= last then
         self.animation = const.animations[self.state]:clone()
     end
@@ -204,7 +254,7 @@ function direction(self)
 end
 
 function Player:draw()
-    local x, y = player.collider:getPosition()
+    local x, y = self.collider:getPosition()
     local sprite_scale = self.direction * const.sprite_scale
     
     self.animation:draw(const.sprite_sheet, x, y, nil, sprite_scale, const.sprite_scale, const.ox, const.oy)

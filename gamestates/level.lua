@@ -12,10 +12,8 @@ function Level:enter(last, level_name)
     local MapManager = require('manager.map_manager')
     map_manager = MapManager(level_name)
 
-    player = map_manager.players[#map_manager.players]
-
     local CameraManager = require('manager.camera_manager')
-    camera_manager = CameraManager(WORLD_SCALE, map_manager.map)
+    camera_manager = CameraManager(WORLD_SCALE, map_manager)
 
     pause = false
 end
@@ -33,22 +31,17 @@ function Level:update(dt)
 
     timer.update(dt)
     world:update(dt)
-    player:update(dt)
-    camera_manager:follow(player.collider:getPosition())
+    map_manager:update(dt)
+    camera_manager:follow(map_manager.x, map_manager.y)
     camera_manager:clamp()
 end
 
 function Level:draw()
-    camera_manager:draw('background')
-    camera_manager:draw('foreground')
+    camera_manager:draw()
 
     camera_manager:push()
-    
-    player:draw()
-    
+    world:draw()
     camera_manager:pop()
-
-    camera_manager:draw('foreplayer')
 end
 
 function Level:leave()

@@ -1,7 +1,22 @@
-function table.print(t)
+function table.print(t, keys)
+    local output = ""
+    local i = 0
     for key, value in pairs(t) do
-        print(key .. ': ' .. tostring(value))
+        i = i + 1
+        output = output .. key .. ': ' .. tostring(value)
+
+        if keys and #keys > 0 then
+            for _, key in ipairs(keys) do
+                output = output .. ', ' .. value[key]
+            end
+        end
+        
+        if i < #t then
+            output = output .. '\n'            
+        end
     end
+
+    print(output)
 end
 
 function table.merge(...)
