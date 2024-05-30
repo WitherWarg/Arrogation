@@ -62,11 +62,11 @@ function CameraManager:draw()
     end
 end
 
-function CameraManager:push()
+function CameraManager:debugWorld()
     self.main_camera:push()
-end
 
-function CameraManager:pop()
+    world:draw()
+
     self.main_camera:pop()
 end
 

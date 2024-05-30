@@ -1,5 +1,73 @@
 local Entity = require('entities.entity')
 
+--#region constant variables
+local const = {}
+    const.run_speed = 260
+    const.accel = 5
+    const.decel = 5
+    const.friction = 2.1
+
+    const.turn_threshold = 30
+
+    const.jump_force = -490
+    const.jump_halt_power = 0.7
+
+    const.jump_buffer = 0.03
+    const.ground_buffer = 0.05
+
+    const.dash_time = 0.2
+    const.dash_speed = 400
+    const.dash_cooldown = 0.25
+    const.max_dashes = 1
+
+    const.max_air_jumps = 1
+    const.air_jump_velocity = -440
+
+    const.wall_jump_force = vector(175, -520)
+    const.wall_slide_speed = 12
+    const.wall_buffer = 0.05
+
+    const.sprite_scale = 1
+    const.sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
+    const.frame_width, const.frame_height = 120, 80
+    const.sprite_width, const.sprite_height = 20, 38
+    const.width, const.height = 12, 28
+    const.ox = const.frame_width / 2 - const.width / 2
+    const.oy = const.frame_height - const.height / 2 - 1
+
+    const.animations = {
+        idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
+        run = { frames = 10, row = 21, durations = 0.1 },
+        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
+        jump = { frames = 3, row = 18, durations = 0.1 },
+        fall = { frames = 3, row = 15, durations = 0.1 },
+        dash = { frames = 2, row = 12, durations = 0.1 },
+    }
+--#endregion
+
+--#region load animations
+local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
+local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)
+
+for name, data in pairs(const.animations) do
+    const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
+    if data.is_flipped then
+        const.animations[name]:flipH()
+    end
+end
+--#endregion
+
+--#region functions
+local run
+local jump
+local wallSlide
+local groundState
+local wallState
+local switchState
+local setDirection
+local dash
+--#endregion
+
 local Player = Class {
     state = '',
     can_switch_state = true,
@@ -23,74 +91,6 @@ local Player = Class {
 
     air_jumps = 0,
 }
-
-local const = {
-    run_speed = 260,
-    accel = 5,
-    decel = 5,
-    friction = 2.1,
-
-    turn_threshold = 30,
-
-    jump_force = -490,
-    jump_halt_power = 0.7,
-
-    jump_buffer = 0.03,
-    ground_buffer = 0.05,
-
-    dash_time = 0.2,
-    dash_speed = 400,
-    dash_cooldown = 0.25,
-    max_dashes = 1,
-
-    max_air_jumps = 1,
-    air_jump_velocity = -440,
-
-    wall_jump_force = vector(175, -520),
-    wall_slide_speed = 12,
-    wall_buffer = 0.05,
-    
-    sprite_scale = 1,
-    sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
-    frame_width = 120, frame_height = 80,
-    sprite_width = 20, sprite_height = 38,
-    width = 12, height = 28,
-
-    animations = {
-        idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
-        run = { frames = 10, row = 21, durations = 0.1 },
-        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
-        jump = { frames = 3, row = 18, durations = 0.1 },
-        fall = { frames = 3, row = 15, durations = 0.1 },
-        dash = { frames = 2, row = 12, durations = 0.1 },
-    },
-}
-
-function loadAnimations()
-    const.ox = const.frame_width / 2 - const.sprite_width / 2 + const.width/2
-    const.oy = const.frame_height - const.height / 2 - 1
-
-    local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
-    local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)
-
-    for name, data in pairs(const.animations) do
-        const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-        if data.is_flipped then
-            const.animations[name]:flipH()
-        end
-    end
-end
-
-loadAnimations()
-
-local run
-local jump
-local wallSlide
-local groundState
-local wallState
-local switchState
-local setDirection
-local dash
 
 function Player:init(object)
     object.width, object.height = const.width * const.sprite_scale, const.height * const.sprite_scale
@@ -169,6 +169,7 @@ function Player:getNormal(collision_class)
     return nx, ny
 end
 
+--#region physics
 function dash(self, wait)
     if self.can_dash and input("dash") and self.dashes < const.max_dashes then
         self.is_dashing = true
@@ -250,7 +251,9 @@ function wallSlide(self)
         self.collider:setLinearVelocity(vx, math.min(vy, const.wall_slide_speed))
     end
 end
+--#endregion
 
+--#region state updates
 function groundState(self)
     local _, ny = self:getNormal('wall')
     self.is_grounded = ny == 1
@@ -328,7 +331,9 @@ function switchState(self)
         self.animation = const.animations[self.state]:clone()
     end
 end
+--#endregion
 
+--#region graphics
 function setDirection(self)
     if input("right") and not input("left") then
         self.direction = 1
@@ -345,5 +350,6 @@ function Player:draw()
 
     self.animation:draw(const.sprite_sheet, x, y, nil, sprite_scale, const.sprite_scale, const.ox, const.oy)
 end
+--#endregion
 
 return Player

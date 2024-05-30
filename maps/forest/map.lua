@@ -10,7 +10,7 @@ return {
   tilewidth = 16,
   tileheight = 16,
   nextlayerid = 54,
-  nextobjectid = 164,
+  nextobjectid = 165,
   properties = {},
   tilesets = {
     {
@@ -1269,24 +1269,16 @@ return {
               properties = {}
             },
             {
-              id = 163,
+              id = 164,
               name = "",
               type = "",
-              shape = "polygon",
-              x = 511,
+              shape = "rectangle",
+              x = 503,
               y = 784,
-              width = 0,
-              height = 0,
+              width = 33,
+              height = 45,
               rotation = 0,
               visible = true,
-              polygon = {
-                { x = 0, y = 0 },
-                { x = 19, y = 0 },
-                { x = 22, y = 15 },
-                { x = 27, y = 36 },
-                { x = -9, y = 36 },
-                { x = -4, y = 15 }
-              },
               properties = {}
             }
           }
