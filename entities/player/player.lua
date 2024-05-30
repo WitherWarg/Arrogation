@@ -1,5 +1,3 @@
-local Entity = require('entities.entity')
-
 --#region constant variables
 local const = {}
     const.run_speed = 260
@@ -34,18 +32,19 @@ local const = {}
     const.width, const.height = 12, 28
     const.ox = const.frame_width / 2 - const.width / 2
     const.oy = const.frame_height - const.height / 2 - 1
-
-    const.animations = {
-        idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
-        run = { frames = 10, row = 21, durations = 0.1 },
-        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
-        jump = { frames = 3, row = 18, durations = 0.1 },
-        fall = { frames = 3, row = 15, durations = 0.1 },
-        dash = { frames = 2, row = 12, durations = 0.1 },
-    }
 --#endregion
 
 --#region load animations
+const.animations = {
+    idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
+    run = { frames = 10, row = 21, durations = 0.1 },
+    turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
+    jump = { frames = 3, row = 18, durations = 0.1 },
+    fall = { frames = 3, row = 15, durations = 0.1 },
+    dash = { frames = 2, row = 12, durations = 0.1 },
+    wall_slide = { frames = 3, row = 30, durations = 0.1 },
+}
+
 local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
 local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)
 
@@ -96,6 +95,7 @@ function Player:init(object)
     object.width, object.height = const.width * const.sprite_scale, const.height * const.sprite_scale
     object.y = object.y - object.height
 
+    local Entity = require('entities.entity')
     Entity.init(self, object)
     
     self.collider:setMass(1)
@@ -296,11 +296,9 @@ function switchState(self)
 
     if self.is_grounded then
         self.state = 'idle'
-        self.can_switch_state = true
 
         if ix ~= 0 then
             self.state = 'run'
-            self.can_switch_state = true
 
             if ix == -math.sign(vx) and math.abs(vx) > const.turn_threshold then
                 self.can_switch_state = false
@@ -315,12 +313,14 @@ function switchState(self)
 
     if not self.is_grounded then
         self.state = 'jump'
-        self.can_switch_state = true            
 
         if vy > 0 then
-            self.can_switch_state = true
             self.state = 'fall'
         end
+    end
+
+    if self.is_walled then
+        self.state = 'wall_slide'
     end
 
     if self.is_dashing then
@@ -341,6 +341,11 @@ function setDirection(self)
     
     if not input("right") and input("left") then
         self.direction = -1
+    end
+
+    if self.is_walled then
+        local nx, _ = self:getNormal('wall')
+        self.direction = -nx
     end
 end
 
