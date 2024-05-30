@@ -7,8 +7,12 @@ local Player = Class {
     
     is_jump_registered = false,
     jump_timer = TIMER,
+
     is_grounded_registered = false,
     ground_timer = TIMER,
+
+    is_walled_registered = false,
+    wall_timer = TIMER,
 
     can_dash = true,
     is_dashing = false,
@@ -38,6 +42,8 @@ local const = {
 
     max_air_jumps = 1,
     air_jump_velocity = -440,
+
+    wall_jump_force = vector(175, -520),
 
     sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
@@ -171,22 +177,33 @@ function jump(self)
         end)
     end
 
-    if self.is_jump_registered and self.is_grounded_registered then
-        self.is_jump_registered, self.is_grounded_registered = false, false
+    local other = self.is_grounded_registered or self.air_jumps < const.max_air_jumps or self.is_walled_registered
+    if self.is_jump_registered and other then
+        self.is_jump_registered = false
+        timer.cancel(self.jump_timer)
 
         local vx, _ = self.collider:getLinearVelocity()
         self.collider:setLinearVelocity(vx, 0)
 
-        if self.is_grounded then
+        if self.is_grounded_registered then
+            self.is_grounded_registered = false
+            timer.cancel(self.ground_timer)
+
             self.collider:applyLinearImpulse(0, const.jump_force)
         end
-    end
-    
-    if not self.is_grounded and input("jump") and self.air_jumps < const.max_air_jumps then
-        local vx, _ = self.collider:getLinearVelocity()
-        self.collider:setLinearVelocity(vx, 0)
-        self.collider:applyLinearImpulse(0, const.air_jump_velocity)
-        self.air_jumps = self.air_jumps + 1
+
+        if self.is_walled_registered then
+            self.is_walled_registered = false
+            timer.cancel(self.wall_timer)
+
+            local nx = 1
+            self.collider:applyLinearImpulse(const.wall_jump_force.x * nx, const.wall_jump_force.y)
+        end
+
+        if (not self.is_grounded and not self.is_walled) and self.air_jumps < const.max_air_jumps then
+            self.collider:applyLinearImpulse(0, const.air_jump_velocity)
+            self.air_jumps = self.air_jumps + 1
+        end
     end
 
     if input("jump", "isReleased") then
@@ -207,6 +224,20 @@ function groundState(self)
 
         self.ground_timer = timer.after(const.ground_buffer, function ()
             self.is_grounded_registered = false
+        end)
+    end
+end
+
+function wallState(self)
+    self.is_walled = false
+
+    if self.is_walled then
+        self.is_walled_registered = true
+
+        timer.cancel(self.wall_timer)
+
+        self.wall_timer = timer.after(const.wall_buffer, function ()
+            self.is_walled_registered = false
         end)
     end
 end
