@@ -13,6 +13,8 @@ local Player = Class {
     can_dash = true,
     is_dashing = false,
     dashes = 0,
+
+    air_jumps = 0,
 }
 
 local const = {
@@ -23,7 +25,7 @@ local const = {
 
     turn_threshold = 30,
 
-    jump_velocity = -490,
+    jump_force = -490,
     jump_halt_power = 0.7,
 
     jump_buffer = 0.03,
@@ -33,6 +35,9 @@ local const = {
     dash_speed = 400,
     dash_cooldown = 0.25,
     max_dashes = 1,
+
+    max_air_jumps = 1,
+    air_jump_velocity = -440,
 
     sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
@@ -70,7 +75,7 @@ loadAnimations()
 
 local run
 local jump
-local isGroundedCheck
+local groundState
 local switchState
 local setDirection
 local dash
@@ -89,7 +94,7 @@ function Player:update(dt)
         dash(self, wait)
     end)
     
-    isGroundedCheck(self)
+    groundState(self)
     switchState(self)
     self.animation:update(dt)
 
@@ -99,6 +104,7 @@ function Player:update(dt)
 
     if self.is_grounded then
         self.dashes = 0
+        self.air_jumps = 0
     end
 
     setDirection(self)
@@ -172,8 +178,15 @@ function jump(self)
         self.collider:setLinearVelocity(vx, 0)
 
         if self.is_grounded then
-            self.collider:applyLinearImpulse(0, const.jump_velocity)
+            self.collider:applyLinearImpulse(0, const.jump_force)
         end
+    end
+    
+    if not self.is_grounded and input("jump") and self.air_jumps < const.max_air_jumps then
+        local vx, _ = self.collider:getLinearVelocity()
+        self.collider:setLinearVelocity(vx, 0)
+        self.collider:applyLinearImpulse(0, const.air_jump_velocity)
+        self.air_jumps = self.air_jumps + 1
     end
 
     if input("jump", "isReleased") then
@@ -182,7 +195,7 @@ function jump(self)
     end
 end
 
-function isGroundedCheck(self)
+function groundState(self)
     local width, height = self.width, 1
     local x, y = self.collider:getX() - width / 2, self.collider:getY() + self.height / 2
     self.is_grounded = #world:queryRectangleArea(x, y, width, height, {'wall'}) > 0
