@@ -5,6 +5,8 @@ local const = {}
     const.decel = 5
     const.friction = 2.1
 
+    const.max_fall_speed = 1500
+
     const.turn_threshold = 30
 
     const.jump_force = -490
@@ -23,7 +25,7 @@ local const = {}
 
     const.wall_jump_force = vector(175, -520)
     const.wall_slide_speed = 12
-    const.wall_buffer = 0.05
+    const.wall_buffer = 0.07
 
     const.sprite_scale = 1
     const.sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
@@ -65,6 +67,7 @@ local wallState
 local switchState
 local setDirection
 local dash
+local fallDamp
 --#endregion
 
 local Player = Class {
@@ -73,22 +76,25 @@ local Player = Class {
 
     direction = 1,
     
-    is_jump_registered = false,
+    is_jump_buffered = false,
     jump_timer = TIMER,
 
     is_grounded = false,
-    is_grounded_registered = false,
+    is_grounded_buffered = false,
     ground_timer = TIMER,
 
     is_walled = false,
-    is_walled_registered = false,
+    is_walled_buffered = false,
     wall_timer = TIMER,
+    has_wall_jump_item = true,
 
     can_dash = true,
     is_dashing = false,
     dashes = 0,
+    has_dash_item = true,
 
     air_jumps = 0,
+    has_air_jump_item = false,
 }
 
 function Player:init(object)
@@ -127,6 +133,7 @@ function Player:update(dt)
     run(self)
     jump(self)
     wallSlide(self)
+    fallDamp(self)
 end
 
 function Player:getInputX()
@@ -171,7 +178,7 @@ end
 
 --#region physics
 function dash(self, wait)
-    if self.can_dash and input("dash") and self.dashes < const.max_dashes then
+    if self.can_dash and input("dash") and self.dashes < const.max_dashes and self.has_dash_item then
         self.is_dashing = true
         self.can_dash = false
         self.dashes = self.dashes + 1
@@ -207,28 +214,29 @@ end
 
 function jump(self)
     if input("jump") then
-        self.is_jump_registered = true
+        self.is_jump_buffered = true
 
         timer.after(const.jump_buffer, function ()
-            self.is_jump_registered = false
+            self.is_jump_buffered = false
         end)
     end
 
-    local other = self.is_grounded_registered or self.air_jumps < const.max_air_jumps or self.is_walled_registered
-    if self.is_jump_registered and other then
-        self.is_jump_registered = false
+    local can_air_jump = self.air_jumps < const.max_air_jumps and self.has_air_jump_item
+
+    if self.is_jump_buffered and (self.is_grounded_buffered or can_air_jump or self.is_walled_buffered) then
+        self.is_jump_buffered = false
         timer.cancel(self.jump_timer)
 
         local vx, _ = self.collider:getLinearVelocity()
         self.collider:setLinearVelocity(vx, 0)
 
-        if self.is_grounded_registered then
-            self.is_grounded_registered = false
+        if self.is_grounded_buffered then
+            self.is_grounded_buffered = false
             timer.cancel(self.ground_timer)
 
             self.collider:applyLinearImpulse(0, const.jump_force)
-        elseif self.is_walled_registered then
-            self.is_walled_registered = false
+        elseif self.is_walled_buffered then
+            self.is_walled_buffered = false
             timer.cancel(self.wall_timer)
 
             local nx, _ = self:getNormal('wall')
@@ -251,6 +259,11 @@ function wallSlide(self)
         self.collider:setLinearVelocity(vx, math.min(vy, const.wall_slide_speed))
     end
 end
+
+function fallDamp(self)
+    local vx, vy = self.collider:getLinearVelocity()
+    self.collider:setLinearVelocity(vx, math.min(vy, const.max_fall_speed))
+end
 --#endregion
 
 --#region state updates
@@ -259,12 +272,12 @@ function groundState(self)
     self.is_grounded = ny == 1
 
     if self.is_grounded then
-        self.is_grounded_registered = true
+        self.is_grounded_buffered = true
 
         timer.cancel(self.ground_timer)
 
         self.ground_timer = timer.after(const.ground_buffer, function ()
-            self.is_grounded_registered = false
+            self.is_grounded_buffered = false
         end)
     end
 end
@@ -272,15 +285,15 @@ end
 function wallState(self)
     local nx, _ = self:getNormal('wall')
     local _, vy = self.collider:getLinearVelocity()
-    self.is_walled = nx ~= 0 and not self.is_grounded and vy > 0
+    self.is_walled = nx ~= 0 and not self.is_grounded and vy > 0 and self.has_wall_jump_item
 
     if self.is_walled then
-        self.is_walled_registered = true
+        self.is_walled_buffered = true
 
         timer.cancel(self.wall_timer)
 
         self.wall_timer = timer.after(const.wall_buffer, function ()
-            self.is_walled_registered = false
+            self.is_walled_buffered = false
         end)
     end
 end
@@ -300,7 +313,7 @@ function switchState(self)
         if ix ~= 0 then
             self.state = 'run'
 
-            if ix == -math.sign(vx) and math.abs(vx) > const.turn_threshold then
+        if ix == -math.sign(vx) and math.abs(vx) > const.turn_threshold then
                 self.can_switch_state = false
                 self.state = 'turn'
 

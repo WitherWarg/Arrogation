@@ -1,6 +1,6 @@
 local Level = {}
 
-local main_player
+local player
 
 function Level:enter(last, level_name)
     self.last = last
@@ -17,7 +17,7 @@ function Level:enter(last, level_name)
     local CameraManager = require('manager.camera_manager')
     camera_manager = CameraManager(WORLD_SCALE, map_manager)
 
-    main_player = map_manager.main_player
+    player = map_manager.main_player
 
     pause = false
 end
