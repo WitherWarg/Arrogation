@@ -52,9 +52,7 @@ local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, s
 
 for name, data in pairs(const.animations) do
     const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-    if data.is_flipped then
-        const.animations[name]:flipH()
-    end
+    const.animations[name].is_flipped = data.is_flipped or false
 end
 --#endregion
 
@@ -342,6 +340,7 @@ function switchState(self)
 
     if self.state ~= last then
         self.animation = const.animations[self.state]:clone()
+        self.animation.is_flipped = const.animations[self.state].is_flipped
     end
 end
 --#endregion
@@ -364,9 +363,13 @@ end
 
 function Player:draw()
     local x, y = self.collider:getPosition()
-    local sprite_scale = self.direction * const.sprite_scale
+    local direction = self.direction
 
-    self.animation:draw(const.sprite_sheet, x, y, nil, sprite_scale, const.sprite_scale, const.ox, const.oy)
+    if self.animation.is_flipped then
+        direction = -direction
+    end
+
+    self.animation:draw(const.sprite_sheet, x, y, nil, direction * const.sprite_scale, const.sprite_scale, const.ox, const.oy)
 end
 --#endregion
 
