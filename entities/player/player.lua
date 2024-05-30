@@ -2,15 +2,18 @@ local Entity = require('entities.entity')
 
 local Player = Class {
     state = '',
-    direction = 1,
     can_switch_state = true,
+
+    direction = 1,
     
     is_jump_registered = false,
     jump_timer = TIMER,
 
+    is_grounded = false,
     is_grounded_registered = false,
     ground_timer = TIMER,
 
+    is_walled = false,
     is_walled_registered = false,
     wall_timer = TIMER,
 
@@ -44,7 +47,9 @@ local const = {
     air_jump_velocity = -440,
 
     wall_jump_force = vector(175, -520),
-
+    wall_slide_speed = 12,
+    wall_buffer = 0.05,
+    
     sprite_scale = 1,
     sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png'),
     frame_width = 120, frame_height = 80,
@@ -54,7 +59,7 @@ local const = {
     animations = {
         idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
         run = { frames = 10, row = 21, durations = 0.1 },
-        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', flipped = true, position = 3 },
+        turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
         jump = { frames = 3, row = 18, durations = 0.1 },
         fall = { frames = 3, row = 15, durations = 0.1 },
         dash = { frames = 2, row = 12, durations = 0.1 },
@@ -70,10 +75,9 @@ function loadAnimations()
 
     for name, data in pairs(const.animations) do
         const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-        if data.flipped then
+        if data.is_flipped then
             const.animations[name]:flipH()
         end
-        const.animations[name].position = data.position or 1
     end
 end
 
@@ -81,7 +85,9 @@ loadAnimations()
 
 local run
 local jump
+local wallSlide
 local groundState
+local wallState
 local switchState
 local setDirection
 local dash
@@ -101,6 +107,7 @@ function Player:update(dt)
     end)
     
     groundState(self)
+    wallState(self)
     switchState(self)
     self.animation:update(dt)
 
@@ -108,7 +115,7 @@ function Player:update(dt)
         return
     end
 
-    if self.is_grounded then
+    if self.is_grounded or self.is_walled then
         self.dashes = 0
         self.air_jumps = 0
     end
@@ -117,6 +124,7 @@ function Player:update(dt)
 
     run(self)
     jump(self)
+    wallSlide(self)
 end
 
 function Player:getInputX()
@@ -131,6 +139,32 @@ function Player:getInputX()
     end
 
     return ix
+end
+
+function Player:getNormal(collision_class)
+    assert(collision_class ~= nil, 'Collision class must exist.')
+
+    local nx, ny = 0, 0
+    local data_list = {}
+
+    self.collider:enter(collision_class)
+    self.collider:exit(collision_class)
+    if self.collider:stay(collision_class) then
+        data_list = self.collider:getStayCollisionData(collision_class)
+    end
+
+    for i, data in ipairs(data_list) do
+        if data.contact:isDestroyed() then
+            table.remove(data_list, i)
+        else
+            local x, y = data.contact:getNormal()
+
+            if x ~= 0 then nx = x end
+            if y ~= 0 then ny = y end
+        end
+    end
+
+    return nx, ny
 end
 
 function dash(self, wait)
@@ -190,17 +224,13 @@ function jump(self)
             timer.cancel(self.ground_timer)
 
             self.collider:applyLinearImpulse(0, const.jump_force)
-        end
-
-        if self.is_walled_registered then
+        elseif self.is_walled_registered then
             self.is_walled_registered = false
             timer.cancel(self.wall_timer)
 
-            local nx = 1
-            self.collider:applyLinearImpulse(const.wall_jump_force.x * nx, const.wall_jump_force.y)
-        end
-
-        if (not self.is_grounded and not self.is_walled) and self.air_jumps < const.max_air_jumps then
+            local nx, _ = self:getNormal('wall')
+            self.collider:applyLinearImpulse(const.wall_jump_force.x * -nx, const.wall_jump_force.y)
+        elseif (not self.is_grounded and not self.is_walled) and self.air_jumps < const.max_air_jumps then
             self.collider:applyLinearImpulse(0, const.air_jump_velocity)
             self.air_jumps = self.air_jumps + 1
         end
@@ -212,10 +242,16 @@ function jump(self)
     end
 end
 
+function wallSlide(self)
+    if self.is_walled then
+        local vx, vy = self.collider:getLinearVelocity()
+        self.collider:setLinearVelocity(vx, math.min(vy, const.wall_slide_speed))
+    end
+end
+
 function groundState(self)
-    local width, height = self.width, 1
-    local x, y = self.collider:getX() - width / 2, self.collider:getY() + self.height / 2
-    self.is_grounded = #world:queryRectangleArea(x, y, width, height, {'wall'}) > 0
+    local _, ny = self:getNormal('wall')
+    self.is_grounded = ny == 1
 
     if self.is_grounded then
         self.is_grounded_registered = true
@@ -229,7 +265,9 @@ function groundState(self)
 end
 
 function wallState(self)
-    self.is_walled = false
+    local nx, _ = self:getNormal('wall')
+    local _, vy = self.collider:getLinearVelocity()
+    self.is_walled = nx ~= 0 and not self.is_grounded and vy > 0
 
     if self.is_walled then
         self.is_walled_registered = true
