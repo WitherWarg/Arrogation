@@ -8,7 +8,7 @@ function MapManager:init(name)
     self.players = {}
     local Player = require('entities.player.player')
     for _, object in ipairs(self.map.layers["hitboxes.player"].objects) do
-        local player = Player(object.x, object.y)
+        local player = Player(object)
         table.insert(self.players, player)
         table.insert(self.update_objects, player)
     end
@@ -18,13 +18,13 @@ function MapManager:init(name)
     self.walls = {}
     local Wall = require('entities.wall')
     for _, object in ipairs(self.map.layers["hitboxes.wall"].objects) do
-        table.insert(self.walls, Wall(object.x, object.y, object.width, object.height))
+        table.insert(self.walls, Wall(object))
     end
 
     self.borders = {}
     local Border = require('entities.border')
     for _, object in ipairs(self.map.layers["hitboxes.border"].objects) do
-        table.insert(self.borders, Border(object.x, object.y, object.width, object.height))
+        table.insert(self.borders, Border(object))
     end
 end
 

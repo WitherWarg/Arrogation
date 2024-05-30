@@ -9,7 +9,7 @@ function Level:enter(last, level_name)
     WORLD_WIDTH = love.graphics.getWidth() / WORLD_SCALE
     WORLD_HEIGHT = love.graphics.getHeight() / WORLD_SCALE
 
-    world = newWorld('wall', 'player')
+    world = newWorld(0, 2000, {'wall', 'player'})
 
     local MapManager = require('manager.map_manager')
     map_manager = MapManager(level_name)
@@ -17,7 +17,7 @@ function Level:enter(last, level_name)
     local CameraManager = require('manager.camera_manager')
     camera_manager = CameraManager(WORLD_SCALE, map_manager)
 
-    main_player = camera_manager.main_player
+    main_player = map_manager.main_player
 
     pause = false
 end

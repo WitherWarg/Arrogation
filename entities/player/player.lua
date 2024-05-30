@@ -67,7 +67,7 @@ local const = {
 }
 
 function loadAnimations()
-    const.ox = const.frame_width / 2 - const.sprite_width / 2
+    const.ox = const.frame_width / 2 - const.sprite_width / 2 + const.width/2
     const.oy = const.frame_height - const.height / 2 - 1
 
     local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
@@ -92,10 +92,12 @@ local switchState
 local setDirection
 local dash
 
-function Player:init(x, y)
-    local height = const.height * const.sprite_scale
-    Entity.init(self, x, y - height, const.width * const.sprite_scale, height)
+function Player:init(object)
+    object.width, object.height = const.width * const.sprite_scale, const.height * const.sprite_scale
+    object.y = object.y - object.height
 
+    Entity.init(self, object)
+    
     self.collider:setMass(1)
 
     self.animation = const.animations.idle
