@@ -2,22 +2,22 @@ local Level = {}
 
 local player
 
-function Level:enter(last, level_name)
-    self.last = last
+function Level:enter(previous, level_name)
+    self.previous = previous
 
-    local WORLD_SCALE = 3
+    WORLD_SCALE = 3
     WORLD_WIDTH = love.graphics.getWidth() / WORLD_SCALE
     WORLD_HEIGHT = love.graphics.getHeight() / WORLD_SCALE
 
     world = newWorld(0, 2000, {'wall', 'player'})
 
-    local MapManager = require('manager.map_manager')
+    local MapManager = require('managers.map_manager')
     map_manager = MapManager(level_name)
 
-    local CameraManager = require('manager.camera_manager')
-    camera_manager = CameraManager(WORLD_SCALE, map_manager)
-
     player = map_manager.main_player
+
+    local CameraManager = require('managers.camera_manager')
+    camera_manager = CameraManager(map_manager, WORLD_SCALE, player.collider)
 
     pause = false
 end
@@ -36,12 +36,13 @@ function Level:update(dt)
     timer.update(dt)
     world:update(dt)
     map_manager:update(dt)
-    camera_manager:follow(map_manager.main_player.collider:getX(), math.huge)
-    camera_manager:clamp()
+    camera_manager:update()
 end
 
 function Level:draw()
     camera_manager:draw()
+
+    debug(player:getNormal('wall'))
 end
 
 function Level:leave()

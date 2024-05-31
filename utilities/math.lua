@@ -11,3 +11,7 @@ function math.clamp(a, b, c)
 
     return math.min( math.max(a, b), c )
 end
+
+function math.lerp(a, b, t)
+    return a + (b - a) * t
+end
