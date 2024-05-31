@@ -1,9 +1,9 @@
 --#region constant variables
 local font = love.graphics.newFont('fonts/angel_wish/Angel wish.otf', 70)
 local margin = vector(40, 15)
-local BORDER = 4 -- Border must be even or else border is distributed unequally
-local HOVER_TWEEN_TIME = 0.3
-local HOVER_TWEEN_METHOD = '-linear'
+local BORDER = 3
+local HOVER_TWEEN_TIME = 0.1
+local HOVER_TWEEN_METHOD = 'out-in-cubic'
 --#endregion
 
 local Button = Class {
@@ -12,6 +12,8 @@ local Button = Class {
     is_released = false,
 
     border = 0,
+
+    is_tween_ongoing = false,
 }
 
 function Button:init(parameters)
@@ -27,7 +29,6 @@ end
 function Button:update()
     local x, y = love.mouse.getPosition()
 
-    local last = self.is_hovered
     self.is_hovered = self.x < x and x < self.x + self.width and self.y < y and y < self.y + self.height
     self.is_pressed = input('left_click') and self.is_hovered
 
@@ -35,26 +36,28 @@ function Button:update()
         self:onPress()
     end
 
-    if self.is_hovered and not last then
-        timer.tween(HOVER_TWEEN_TIME/2, self, { border = BORDER * 2 }, 'out' .. HOVER_TWEEN_METHOD, function ()
-            timer.tween(HOVER_TWEEN_TIME/2, self, { border = BORDER }, 'in' .. HOVER_TWEEN_METHOD)
+    if self.is_hovered and not self.is_tween_ongoing then
+        self.is_tween_ongoing = true
+        timer.tween(HOVER_TWEEN_TIME, self, { border = BORDER * 2 }, HOVER_TWEEN_METHOD, function ()
+            self.is_tween_ongoing = false
         end)
     end
 
     if not self.is_hovered then
         self.border = 0
+        self.is_tween_ongoing = false
     end
 end
 
 function Button:draw()
     love.graphics.push('all')
 
-    if self.is_hovered then
+    if self.is_tween_ongoing or self.is_hovered then
         love.graphics.setColor(hsl(0, 0, 100))
         love.graphics.rectangle(
             'fill',
-            self.x - self.border/2,
-            self.y - self.border/2,
+            self.x - self.border/2 - 0.5, -- Border has a 0.5 offset for some reason
+            self.y - self.border/2 - 0.5,
             self.width + self.border,
             self.height + self.border
         )
