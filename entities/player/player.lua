@@ -31,8 +31,6 @@ local SPRITE_SHEET = love.graphics.newImage('entities/player/animations/Colour2/
 local SHEET_WIDTH, SHEET_HEIGHT = SPRITE_SHEET:getDimensions()
 local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
 local WIDTH, HEIGHT = 12, 28
-local ORIGIN_X = FRAME_WIDTH / 2 - WIDTH / 2
-local ORIGIN_Y = FRAME_HEIGHT - HEIGHT / 2 - 1 -- For some reason origin y is off by one
 --#endregion
 
 --#region animations
@@ -166,8 +164,12 @@ function Player:getNormal(collision_class)
         else
             local x, y = data.contact:getNormal()
 
-            if x ~= 0 then nx = x end
-            if y ~= 0 then ny = y end
+            if x ~= 0 then
+                nx = x
+            end
+            if y ~= 0 then
+                ny = y
+            end
         end
     end
 
@@ -368,14 +370,22 @@ function setDirection(self)
 end
 
 function Player:draw()
-    local x, y = self.collider:getPosition()
     local direction = self.direction
 
     if self.animation.is_flipped then
         direction = -direction
     end
 
-    self.animation:draw(SPRITE_SHEET, x, y, nil, direction * PLAYER_SCALE, PLAYER_SCALE, ORIGIN_X , ORIGIN_Y)
+    self.animation:draw(
+        SPRITE_SHEET,
+        self.collider:getX(),
+        self.collider:getY(),
+        nil,
+        direction * PLAYER_SCALE,
+        PLAYER_SCALE,
+        FRAME_WIDTH / 2 - WIDTH / 2,
+        FRAME_HEIGHT - HEIGHT / 2 - 1 -- For some reason origin y is off by one
+    )
 end
 --#endregion
 

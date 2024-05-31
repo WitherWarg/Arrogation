@@ -27,5 +27,5 @@ function love.load()
     MainMenu = require('gamestates.main_menu')
 
     GS.registerEvents{'enter', 'update', 'draw', 'leave'}
-    return GS.switch(MainMenu)
+    return GS.switch(Level, 'forest')
 end

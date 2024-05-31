@@ -53,8 +53,6 @@ end
 
 function CameraManager:update()
     local _, vy = self.target_collider:getLinearVelocity()
-    local x, y = self.target_collider:getPosition()
-    local cam_x, cam_y = self.camera:getTranslation()
 
     local Y_SPEED_PERCENT = UP_SPEED_PERCENT
 
@@ -63,8 +61,8 @@ function CameraManager:update()
     end
 
     self:follow(
-        math.lerp(cam_x, x, X_SPEED_PERCENT/100),
-        math.lerp(cam_y, y, Y_SPEED_PERCENT/100)
+        math.lerp(self.camera:getTranslationX(), self.target_collider:getX(), X_SPEED_PERCENT/100),
+        math.lerp(self.camera:getTranslationY(), self.target_collider:getY(), Y_SPEED_PERCENT/100)
     )
     self:clamp()
 end
@@ -74,12 +72,12 @@ function CameraManager:follow(x, y)
 end
 
 function CameraManager:clamp()
-    local cam_x, cam_y = self.camera:getTranslation()
+    local x, y = self.camera:getTranslation()
 
-    local x = math.clamp(cam_x, self.left + WORLD_WIDTH / 2, self.right - WORLD_WIDTH / 2)
-    local y = math.clamp(cam_y, self.top + WORLD_HEIGHT / 2, self.bottom - WORLD_HEIGHT / 2)
-
-    self.camera:setTranslation(x, y)
+    self.camera:setTranslation(
+        math.clamp(x, self.left + WORLD_WIDTH / 2, self.right - WORLD_WIDTH / 2),
+        math.clamp(y, self.top + WORLD_HEIGHT / 2, self.bottom - WORLD_HEIGHT / 2)
+    )
 end
 
 function CameraManager:draw()

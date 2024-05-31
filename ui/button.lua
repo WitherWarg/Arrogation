@@ -1,8 +1,8 @@
 --#region constant variables
 local font = love.graphics.newFont('fonts/angel_wish/Angel wish.otf', 70)
 local margin = vector(40, 15)
-local BORDER = 3
-local HOVER_TWEEN_TIME = 0.1
+local BORDER = 2
+local HOVER_TWEEN_TIME = 0.05
 local HOVER_TWEEN_METHOD = 'out-in-cubic'
 --#endregion
 
