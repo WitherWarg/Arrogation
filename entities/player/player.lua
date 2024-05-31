@@ -101,6 +101,7 @@ function Player:init(object)
     Entity.init(self, object)
 
     self.collider:setMass(1)
+    self.collider:setCollisionClass(world, 'player')
 
     self.animation = animations.idle
 end
@@ -111,7 +112,7 @@ function Player:update(dt)
     end)
 
     groundState(self)
-    wallState(self)
+    -- wallState(self)
     switchState(self)
     self.animation:update(dt)
 
@@ -202,12 +203,6 @@ function dash(self, wait)
 end
 
 function run(self)
-    local _, ny = self:getNormal('wall')
-
-    if math.sign(ny) ~= ny then
-        return
-    end
-
     local vx, _ = self.collider:getLinearVelocity()
     local ix = self:getInputX()
     local rate_of_change = ix ~= 0 and ACCELERATION or DECELERATION
@@ -274,8 +269,13 @@ end
 
 --#region state updates
 function groundState(self)
-    local _, ny = self:getNormal('wall')
-    self.is_grounded = ny == 1
+    local colliders = world:queryRectangleArea(
+        self.x - self.width/2,
+        self.y, self.x + self.width/2,
+        self.y + self.height/2
+    )
+
+    self.is_grounded = true
 
     if self.is_grounded then
         self.is_grounded_buffered = true

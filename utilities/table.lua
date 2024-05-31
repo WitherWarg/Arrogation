@@ -1,4 +1,6 @@
 function table.print(t, keys)
+    assert(type(t) == 'table', "Must give table.print a table")
+
     local output = ""
 
     for key1, value in pairs(t) do
@@ -6,11 +8,16 @@ function table.print(t, keys)
 
         if keys and #keys > 0 then
             for _, key2 in ipairs(keys) do
-                output = output .. ', ' .. value[key2]
+                output = output .. ', ' .. tostring(value[key2])
             end
         end
         
         output = output .. '\n'
+    end
+
+    if output == '' then
+        print("Table is empty")
+        return
     end
 
     print(string.sub(output, 1, -2))
@@ -36,4 +43,12 @@ function table.clone(t)
     end
 
     return result
+end
+
+function table.len(t)
+    local i = 0
+    for _, _ in pairs(t) do
+        i = i + 1
+    end
+    return i
 end

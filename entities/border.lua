@@ -5,6 +5,7 @@ function Border:init(object)
     Entity.init(self, object)
 
     self.collider:setType('static')
+    self.collider:setCollisionClass(world, 'border')
 end
 
 return Border

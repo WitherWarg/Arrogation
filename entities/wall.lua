@@ -5,7 +5,7 @@ function Wall:init(object)
     Entity.init(self, object)
 
     self.collider:setType('static')
-    self.collider:setCollisionClass('wall')
+    self.collider:setCollisionClass(world, 'wall')
 end
 
 return Wall

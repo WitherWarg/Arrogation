@@ -20,12 +20,11 @@ function love.load()
     require('utilities.table')
     require('utilities.input')
     require('utilities.debug')
-    require('utilities.world')
     require('utilities.printf')
 
     Level = require('gamestates.level')
     MainMenu = require('gamestates.main_menu')
-
+    
     GS.registerEvents{'enter', 'update', 'draw', 'leave'}
     return GS.switch(Level, 'forest')
 end

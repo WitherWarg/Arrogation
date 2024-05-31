@@ -16,6 +16,8 @@ function MainMenu:enter()
             GS.switch(Level, 'forest')
         end
     }
+
+    love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
 end
 
 function MainMenu:update(dt)
