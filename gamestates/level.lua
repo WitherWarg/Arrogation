@@ -36,7 +36,7 @@ function Level:update(dt)
     timer.update(dt)
     world:update(dt)
     map_manager:update(dt)
-    camera_manager:follow(map_manager.x, math.huge)
+    camera_manager:follow(map_manager.main_player.collider:getX(), math.huge)
     camera_manager:clamp()
 end
 

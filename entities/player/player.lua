@@ -1,44 +1,43 @@
 --#region constant variables
-local const = {}
-    const.run_speed = 260
-    const.accel = 5
-    const.decel = 5
-    const.friction = 2.1
+local RUN_SPEED = 260
+local ACCELERATION = 5
+local DECELERATION = 5
+local FRICTION = 2.1
 
-    const.max_fall_speed = 1500
+local MAX_FALL_SPEED = 1500
 
-    const.turn_threshold = 30
+local MIN_TURN_SPEED = 30
 
-    const.jump_force = -490
-    const.jump_halt_power = 0.7
+local JUMP_VELOCITY = -490
+local JUMP_HALT_POWER = 0.7
+local JUMP_BUFFER = 0.03
 
-    const.jump_buffer = 0.03
-    const.ground_buffer = 0.05
+local GROUND_BUFFER = 0.05
 
-    const.dash_time = 0.2
-    const.dash_speed = 400
-    const.dash_cooldown = 0.25
-    const.max_dashes = 1
+local DASH_TIME = 0.2
+local DASH_SPEED = 400
+local DASH_COOLDOWN = 0.25
+local MAX_DASHES = 1
 
-    const.max_air_jumps = 1
-    const.air_jump_velocity = -440
+local MAX_AIR_JUMPS = 1
+local AIR_JUMP_VELOCITY = -440
 
-    const.wall_jump_force = vector(175, -520)
-    const.wall_slide_speed = 12
-    const.wall_buffer = 0.07
+local WALL_JUMP_VELOCITY = vector(175, -520)
+local WALL_SLIDE_SPEED = 12
+local WALL_BUFFER = 0.07
 
-    const.sprite_scale = 1
-    const.sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
-    const.frame_width, const.frame_height = 120, 80
-    const.sprite_width, const.sprite_height = 20, 38
-    const.width, const.height = 12, 28
-    const.ox = const.frame_width / 2 - const.width / 2
-    const.oy = const.frame_height - const.height / 2 - 1
+local PLAYER_SCALE = 1
+local SPRITE_SHEET = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
+local SHEET_WIDTH, SHEET_HEIGHT = SPRITE_SHEET:getDimensions()
+local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
+local WIDTH, HEIGHT = 12, 28
+local ORIGIN_X = FRAME_WIDTH / 2 - WIDTH / 2
+local ORIGIN_Y = FRAME_HEIGHT - HEIGHT / 2 - 1 -- For some reason origin y is off by one
 --#endregion
 
---#region load animations
-const.animations = {
-    idle = { frames = 10, row = 17, durations = {['1-4']=0.1, ['4-4'] = 0.5, ['5-10'] = 0.15} },
+--#region animations
+local animations = {
+    idle = { frames = 10, row = 17, durations = { ['1-4'] = 0.1, ['4-4'] = 0.5, ['5-10'] = 0.15 } },
     run = { frames = 10, row = 21, durations = 0.1 },
     turn = { frames = 3, row = 26, durations = 0.07, onLoop = 'pauseAtEnd', is_flipped = true },
     jump = { frames = 3, row = 18, durations = 0.1 },
@@ -47,25 +46,26 @@ const.animations = {
     wall_slide = { frames = 3, row = 30, durations = 0.1 },
 }
 
-local sheet_width, sheet_height = const.sprite_sheet:getDimensions()
-local grid = anim8.newGrid(const.frame_width, const.frame_height, sheet_width, sheet_height)
+local grid = anim8.newGrid(FRAME_WIDTH, FRAME_HEIGHT, SHEET_WIDTH, SHEET_HEIGHT)
 
-for name, data in pairs(const.animations) do
-    const.animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
-    const.animations[name].is_flipped = data.is_flipped or false
+for name, data in pairs(animations) do
+    animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
+    animations[name].is_flipped = data.is_flipped or false
 end
 --#endregion
 
 --#region functions
 local run
+local dash
 local jump
 local wallSlide
+local fallDamp
+
 local groundState
 local wallState
 local switchState
+
 local setDirection
-local dash
-local fallDamp
 --#endregion
 
 local Player = Class {
@@ -73,7 +73,7 @@ local Player = Class {
     can_switch_state = true,
 
     direction = 1,
-    
+
     is_jump_buffered = false,
     jump_timer = TIMER,
 
@@ -96,22 +96,22 @@ local Player = Class {
 }
 
 function Player:init(object)
-    object.width, object.height = const.width * const.sprite_scale, const.height * const.sprite_scale
+    object.width, object.height = WIDTH * PLAYER_SCALE, HEIGHT * PLAYER_SCALE
     object.y = object.y - object.height
 
     local Entity = require('entities.entity')
     Entity.init(self, object)
-    
+
     self.collider:setMass(1)
 
-    self.animation = const.animations.idle
+    self.animation = animations.idle
 end
 
 function Player:update(dt)
-    timer.script(function (wait)
+    timer.script(function(wait)
         dash(self, wait)
     end)
-    
+
     groundState(self)
     wallState(self)
     switchState(self)
@@ -176,24 +176,24 @@ end
 
 --#region physics
 function dash(self, wait)
-    if self.can_dash and input("dash") and self.dashes < const.max_dashes and self.has_dash_item then
+    if self.can_dash and input("dash") and self.dashes < MAX_DASHES and self.has_dash_item then
         self.is_dashing = true
         self.can_dash = false
         self.dashes = self.dashes + 1
-    
+
         local g = self.collider:getGravityScale()
         self.collider:setGravityScale(0)
-    
+
         self.collider:setLinearVelocity(0, 0)
-        self.collider:applyLinearImpulse(self.direction * const.dash_speed, 0)
-    
-        wait(const.dash_time)
-    
+        self.collider:applyLinearImpulse(self.direction * DASH_SPEED, 0)
+
+        wait(DASH_TIME)
+
         self.collider:setGravityScale(g)
-    
+
         self.is_dashing = false
 
-        wait(const.dash_cooldown)
+        wait(DASH_COOLDOWN)
 
         self.can_dash = true
     end
@@ -202,24 +202,24 @@ end
 function run(self)
     local vx, _ = self.collider:getLinearVelocity()
     local ix = self:getInputX()
-    local rate_of_change = ix ~= 0 and const.accel or const.decel
-    local force = rate_of_change * (const.run_speed * ix - vx)
-    
+    local rate_of_change = ix ~= 0 and ACCELERATION or DECELERATION
+    local force = rate_of_change * (RUN_SPEED * ix - vx)
+
     self.collider:applyForce(force, 0)
 
-    self.collider:applyForce(force * const.friction, 0)
+    self.collider:applyForce(force * FRICTION, 0)
 end
 
 function jump(self)
     if input("jump") then
         self.is_jump_buffered = true
 
-        timer.after(const.jump_buffer, function ()
+        timer.after(JUMP_BUFFER, function()
             self.is_jump_buffered = false
         end)
     end
 
-    local can_air_jump = self.air_jumps < const.max_air_jumps and self.has_air_jump_item
+    local can_air_jump = self.air_jumps < MAX_AIR_JUMPS and self.has_air_jump_item
 
     if self.is_jump_buffered and (self.is_grounded_buffered or can_air_jump or self.is_walled_buffered) then
         self.is_jump_buffered = false
@@ -232,35 +232,35 @@ function jump(self)
             self.is_grounded_buffered = false
             timer.cancel(self.ground_timer)
 
-            self.collider:applyLinearImpulse(0, const.jump_force)
+            self.collider:applyLinearImpulse(0, JUMP_VELOCITY)
         elseif self.is_walled_buffered then
             self.is_walled_buffered = false
             timer.cancel(self.wall_timer)
 
             local nx, _ = self:getNormal('wall')
-            self.collider:applyLinearImpulse(const.wall_jump_force.x * -nx, const.wall_jump_force.y)
-        elseif (not self.is_grounded and not self.is_walled) and self.air_jumps < const.max_air_jumps then
-            self.collider:applyLinearImpulse(0, const.air_jump_velocity)
+            self.collider:applyLinearImpulse(WALL_JUMP_VELOCITY.x * -nx, WALL_JUMP_VELOCITY.y) -- Face away from wall direction (nx)
+        elseif (not self.is_grounded and not self.is_walled) and self.air_jumps < MAX_AIR_JUMPS then
+            self.collider:applyLinearImpulse(0, AIR_JUMP_VELOCITY)
             self.air_jumps = self.air_jumps + 1
         end
     end
 
     if input("jump", "isReleased") then
         local _, vy = self.collider:getLinearVelocity()
-        self.collider:applyLinearImpulse(0, -vy * const.jump_halt_power)
+        self.collider:applyLinearImpulse(0, -vy * JUMP_HALT_POWER)
     end
 end
 
 function wallSlide(self)
     if self.is_walled then
         local vx, vy = self.collider:getLinearVelocity()
-        self.collider:setLinearVelocity(vx, math.min(vy, const.wall_slide_speed))
+        self.collider:setLinearVelocity(vx, math.min(vy, WALL_SLIDE_SPEED))
     end
 end
 
 function fallDamp(self)
     local vx, vy = self.collider:getLinearVelocity()
-    self.collider:setLinearVelocity(vx, math.min(vy, const.max_fall_speed))
+    self.collider:setLinearVelocity(vx, math.min(vy, MAX_FALL_SPEED))
 end
 --#endregion
 
@@ -274,7 +274,7 @@ function groundState(self)
 
         timer.cancel(self.ground_timer)
 
-        self.ground_timer = timer.after(const.ground_buffer, function ()
+        self.ground_timer = timer.after(GROUND_BUFFER, function()
             self.is_grounded_buffered = false
         end)
     end
@@ -290,7 +290,7 @@ function wallState(self)
 
         timer.cancel(self.wall_timer)
 
-        self.wall_timer = timer.after(const.wall_buffer, function ()
+        self.wall_timer = timer.after(WALL_BUFFER, function()
             self.is_walled_buffered = false
         end)
     end
@@ -311,11 +311,11 @@ function switchState(self)
         if ix ~= 0 then
             self.state = 'run'
 
-        if ix == -math.sign(vx) and math.abs(vx) > const.turn_threshold then
+            if ix == -math.sign(vx) and math.abs(vx) > MIN_TURN_SPEED then
                 self.can_switch_state = false
                 self.state = 'turn'
 
-                timer.after(const.animations.turn.totalDuration, function ()
+                timer.after(animations.turn.totalDuration, function()
                     self.can_switch_state = true
                 end)
             end
@@ -339,8 +339,8 @@ function switchState(self)
     end
 
     if self.state ~= last then
-        self.animation = const.animations[self.state]:clone()
-        self.animation.is_flipped = const.animations[self.state].is_flipped
+        self.animation = animations[self.state]:clone()
+        self.animation.is_flipped = animations[self.state].is_flipped
     end
 end
 --#endregion
@@ -350,14 +350,14 @@ function setDirection(self)
     if input("right") and not input("left") then
         self.direction = 1
     end
-    
+
     if not input("right") and input("left") then
         self.direction = -1
     end
 
     if self.is_walled then
         local nx, _ = self:getNormal('wall')
-        self.direction = -nx
+        self.direction = -nx -- Face away from wall direction (nx)
     end
 end
 
@@ -369,7 +369,7 @@ function Player:draw()
         direction = -direction
     end
 
-    self.animation:draw(const.sprite_sheet, x, y, nil, direction * const.sprite_scale, const.sprite_scale, const.ox, const.oy)
+    self.animation:draw(SPRITE_SHEET, x, y, nil, direction * PLAYER_SCALE, PLAYER_SCALE, ORIGIN_X , ORIGIN_Y)
 end
 --#endregion
 

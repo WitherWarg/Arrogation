@@ -13,7 +13,7 @@ function MapManager:init(name)
         table.insert(self.update_objects, player)
     end
 
-    self.main_player = self.players[math.random(1, #self.players)]
+    self.main_player = self.players[math.random(#self.players)]
 
     self.walls = {}
     local Wall = require('entities.wall')
@@ -32,8 +32,6 @@ function MapManager:update(dt)
     for _, object in ipairs(self.update_objects) do
         object:update(dt)
     end
-
-    self.x, self.y = self.main_player.collider:getPosition()
 end
 
 return MapManager
