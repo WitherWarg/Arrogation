@@ -10,7 +10,7 @@ return {
   tilewidth = 16,
   tileheight = 16,
   nextlayerid = 54,
-  nextobjectid = 165,
+  nextobjectid = 170,
   properties = {},
   tilesets = {
     {
@@ -1113,19 +1113,6 @@ return {
               properties = {}
             },
             {
-              id = 149,
-              name = "",
-              type = "",
-              shape = "rectangle",
-              x = 884,
-              y = 562,
-              width = 55,
-              height = 16,
-              rotation = 0,
-              visible = true,
-              properties = {}
-            },
-            {
               id = 150,
               name = "",
               type = "",
@@ -1178,32 +1165,6 @@ return {
               properties = {}
             },
             {
-              id = 155,
-              name = "",
-              type = "",
-              shape = "rectangle",
-              x = 1031,
-              y = 564,
-              width = 34,
-              height = 41,
-              rotation = 0,
-              visible = true,
-              properties = {}
-            },
-            {
-              id = 156,
-              name = "",
-              type = "",
-              shape = "rectangle",
-              x = 1159,
-              y = 564,
-              width = 34,
-              height = 41,
-              rotation = 0,
-              visible = true,
-              properties = {}
-            },
-            {
               id = 157,
               name = "",
               type = "",
@@ -1212,19 +1173,6 @@ return {
               y = 523,
               width = 37,
               height = 27,
-              rotation = 0,
-              visible = true,
-              properties = {}
-            },
-            {
-              id = 158,
-              name = "",
-              type = "",
-              shape = "rectangle",
-              x = 1080,
-              y = 435,
-              width = 112,
-              height = 31,
               rotation = 0,
               visible = true,
               properties = {}
@@ -1269,16 +1217,106 @@ return {
               properties = {}
             },
             {
-              id = 164,
+              id = 165,
               name = "",
               type = "",
-              shape = "rectangle",
-              x = 503,
+              shape = "polygon",
+              x = 511,
               y = 784,
-              width = 33,
-              height = 45,
+              width = 0,
+              height = 0,
               rotation = 0,
               visible = true,
+              polygon = {
+                { x = 0, y = 0 },
+                { x = 18, y = 0 },
+                { x = 25, y = 9 },
+                { x = 25, y = 39 },
+                { x = -6, y = 39 },
+                { x = -6, y = 10 }
+              },
+              properties = {}
+            },
+            {
+              id = 166,
+              name = "",
+              type = "",
+              shape = "polygon",
+              x = 892,
+              y = 560,
+              width = 0,
+              height = 0,
+              rotation = 0,
+              visible = true,
+              polygon = {
+                { x = 0, y = 0 },
+                { x = 40, y = 0 },
+                { x = 48, y = 17 },
+                { x = -5, y = 16 }
+              },
+              properties = {}
+            },
+            {
+              id = 167,
+              name = "",
+              type = "",
+              shape = "polygon",
+              x = 1038,
+              y = 562,
+              width = 0,
+              height = 0,
+              rotation = 0,
+              visible = true,
+              polygon = {
+                { x = 0, y = 0 },
+                { x = 18, y = 0 },
+                { x = 25, y = 9 },
+                { x = 25, y = 39 },
+                { x = -6, y = 39 },
+                { x = -6, y = 10 }
+              },
+              properties = {}
+            },
+            {
+              id = 168,
+              name = "",
+              type = "",
+              shape = "polygon",
+              x = 1166,
+              y = 562,
+              width = 0,
+              height = 0,
+              rotation = 0,
+              visible = true,
+              polygon = {
+                { x = 0, y = 0 },
+                { x = 18, y = 0 },
+                { x = 25, y = 9 },
+                { x = 25, y = 39 },
+                { x = -6, y = 39 },
+                { x = -6, y = 10 }
+              },
+              properties = {}
+            },
+            {
+              id = 169,
+              name = "",
+              type = "",
+              shape = "polygon",
+              x = 1086,
+              y = 432,
+              width = 0,
+              height = 0,
+              rotation = 0,
+              visible = true,
+              polygon = {
+                { x = 0, y = 0 },
+                { x = 100, y = 0 },
+                { x = 109, y = 15 },
+                { x = 99, y = 29 },
+                { x = 0, y = 28 },
+                { x = -7, y = 17 }
+              },
               properties = {}
             }
           }

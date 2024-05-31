@@ -200,6 +200,12 @@ function dash(self, wait)
 end
 
 function run(self)
+    local _, ny = self:getNormal('wall')
+
+    if math.sign(ny) ~= ny then
+        return
+    end
+
     local vx, _ = self.collider:getLinearVelocity()
     local ix = self:getInputX()
     local rate_of_change = ix ~= 0 and ACCELERATION or DECELERATION
@@ -283,7 +289,7 @@ end
 function wallState(self)
     local nx, _ = self:getNormal('wall')
     local _, vy = self.collider:getLinearVelocity()
-    self.is_walled = nx ~= 0 and not self.is_grounded and vy > 0 and self.has_wall_jump_item
+    self.is_walled = math.abs(nx) == 1 and not self.is_grounded and vy > 0 and self.has_wall_jump_item
 
     if self.is_walled then
         self.is_walled_buffered = true
@@ -357,7 +363,7 @@ function setDirection(self)
 
     if self.is_walled then
         local nx, _ = self:getNormal('wall')
-        self.direction = -nx -- Face away from wall direction (nx)
+        self.direction = -math.sign(nx) -- Face away from wall direction (nx)
     end
 end
 
