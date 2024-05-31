@@ -41,8 +41,6 @@ end
 
 function Level:draw()
     camera_manager:draw()
-
-    debug(player:getNormal('wall'))
 end
 
 function Level:leave()

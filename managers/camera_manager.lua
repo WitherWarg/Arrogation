@@ -1,7 +1,8 @@
 --#region constant variables
-local X_SPEED = 0.1
-local UP_SPEED = 0.05
-local DOWN_SPEED = 0.15
+local X_SPEED_PERCENT = 10
+local UP_SPEED_PERCENT = 5
+local DOWN_SPEED_PERCENT = 35
+local DOWN_THRESHOLD = 570
 --#endregion
 
 local CameraManager = Class {}
@@ -51,22 +52,20 @@ function CameraManager:init(map_manager, scale, target_collider)
 end
 
 function CameraManager:update()
-    -- TODO
     local _, vy = self.target_collider:getLinearVelocity()
     local x, y = self.target_collider:getPosition()
     local cam_x, cam_y = self.camera:getTranslation()
 
-    local Y_SPEED = UP_SPEED
+    local Y_SPEED_PERCENT = UP_SPEED_PERCENT
 
-    if vy > 0 then
-        Y_SPEED = DOWN_SPEED
+    if vy > DOWN_THRESHOLD then
+        Y_SPEED_PERCENT = DOWN_SPEED_PERCENT
     end
 
     self:follow(
-        math.lerp(cam_x, x, X_SPEED),
-        math.lerp(cam_y, y, Y_SPEED)
+        math.lerp(cam_x, x, X_SPEED_PERCENT/100),
+        math.lerp(cam_y, y, Y_SPEED_PERCENT/100)
     )
-
     self:clamp()
 end
 
