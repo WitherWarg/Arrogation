@@ -53,6 +53,7 @@ end
 
 function CameraManager:update()
     local _, vy = self.target_collider:getLinearVelocity()
+    local x, y = self.camera:getTranslation()
 
     local Y_SPEED_PERCENT = UP_SPEED_PERCENT
 
@@ -61,8 +62,8 @@ function CameraManager:update()
     end
 
     self:follow(
-        math.lerp(self.camera:getTranslationX(), self.target_collider:getX(), X_SPEED_PERCENT/100),
-        math.lerp(self.camera:getTranslationY(), self.target_collider:getY(), Y_SPEED_PERCENT/100)
+        math.lerp(x, self.target_collider:getX(), X_SPEED_PERCENT/100),
+        math.lerp(y, self.target_collider:getY(), Y_SPEED_PERCENT/100)
     )
     self:clamp()
 end
