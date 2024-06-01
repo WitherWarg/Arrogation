@@ -101,7 +101,7 @@ function Player:init(object)
     Entity.init(self, object)
 
     self.collider:setMass(1)
-    self.collider:setCollisionClass(world, 'player')
+    self.collider:setCollisionClasses(world, 'player')
 
     self.animation = animations.idle
 end
@@ -269,13 +269,13 @@ end
 
 --#region state updates
 function groundState(self)
-    local colliders = world:queryRectangleArea(
-        self.x - self.width/2,
-        self.y, self.x + self.width/2,
-        self.y + self.height/2
-    )
+    -- local colliders = world:queryRectangleArea(
+    --     self.x - self.width/2,
+    --     self.y, self.x + self.width/2,
+    --     self.y + self.height/2
+    -- )
 
-    self.is_grounded = true
+    self.is_grounded = false
 
     if self.is_grounded then
         self.is_grounded_buffered = true

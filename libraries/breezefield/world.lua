@@ -343,8 +343,13 @@ function World:addCollisionClasses(...)
 end
 
 function World:addCollisionClass(collision_class, ignores)
+   local table_len = 0
+    for _, _ in pairs(self.collision_classes) do
+        table_len = table_len + 1
+    end
+
    self.collision_classes[collision_class:lower()] = {
-      category = table.len(self.collision_classes) + 1,
+      category = table_len + 1,
       ignores = ignores or {}
    }
 end
