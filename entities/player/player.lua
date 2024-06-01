@@ -13,6 +13,7 @@ local JUMP_HALT_POWER = 0.7
 local JUMP_BUFFER = 0.03
 
 local GROUND_BUFFER = 0.05
+local GROUND_QUERY_LENGTH = 5
 
 local DASH_TIME = 0.2
 local DASH_SPEED = 400
@@ -30,7 +31,7 @@ local PLAYER_SCALE = 1
 local SPRITE_SHEET = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
 local SHEET_WIDTH, SHEET_HEIGHT = SPRITE_SHEET:getDimensions()
 local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
-local WIDTH, HEIGHT = 12, 28
+local PLAYER_WIDTH, PLAYER_HEIGHT = 12, 28
 --#endregion
 
 --#region animations
@@ -94,11 +95,13 @@ local Player = Class {
 }
 
 function Player:init(object)
-    object.width, object.height = WIDTH * PLAYER_SCALE, HEIGHT * PLAYER_SCALE
+    object.width, object.height = PLAYER_WIDTH * PLAYER_SCALE, PLAYER_HEIGHT * PLAYER_SCALE
     object.y = object.y - object.height
 
     local Entity = require('entities.entity')
     Entity.init(self, object)
+
+    self.x, self.y = nil, nil
 
     self.collider:setMass(1)
     self.collider:setCollisionClasses(world, 'player')
@@ -175,6 +178,25 @@ function Player:getNormal(collision_class)
     end
 
     return nx, ny
+end
+
+function Player:draw()
+    local direction = self.direction
+
+    if self.animation.is_flipped then
+        direction = -direction
+    end
+
+    self.animation:draw(
+        SPRITE_SHEET,
+        self.collider:getX(),
+        self.collider:getY(),
+        nil,
+        direction * PLAYER_SCALE,
+        PLAYER_SCALE,
+        FRAME_WIDTH / 2 - PLAYER_WIDTH / 2,
+        FRAME_HEIGHT - PLAYER_HEIGHT / 2 - 1 -- For some reason animation is off by 1 (floating-point weirdness????)
+    )
 end
 
 --#region physics
@@ -269,13 +291,13 @@ end
 
 --#region state updates
 function groundState(self)
-    -- local colliders = world:queryRectangleArea(
-    --     self.x - self.width/2,
-    --     self.y, self.x + self.width/2,
-    --     self.y + self.height/2
-    -- )
+    local x, y = self.collider:getPosition()
 
-    self.is_grounded = false
+    self.is_grounded = #world:queryEdgeArea(
+        x - GROUND_QUERY_LENGTH/2, y + self.height/2 + 1,
+        x + GROUND_QUERY_LENGTH/2, y + self.height/2 + 1,
+        'wall'
+    ) > 0
 
     if self.is_grounded then
         self.is_grounded_buffered = true
@@ -353,7 +375,7 @@ function switchState(self)
 end
 --#endregion
 
---#region graphics
+--#region direction
 function setDirection(self)
     if input("right") and not input("left") then
         self.direction = 1
@@ -367,25 +389,6 @@ function setDirection(self)
         local nx, _ = self:getNormal('wall')
         self.direction = -math.sign(nx) -- Face away from wall direction (nx)
     end
-end
-
-function Player:draw()
-    local direction = self.direction
-
-    if self.animation.is_flipped then
-        direction = -direction
-    end
-
-    self.animation:draw(
-        SPRITE_SHEET,
-        self.collider:getX(),
-        self.collider:getY(),
-        nil,
-        direction * PLAYER_SCALE,
-        PLAYER_SCALE,
-        FRAME_WIDTH / 2 - WIDTH / 2,
-        FRAME_HEIGHT - HEIGHT / 2 - 1 -- For some reason origin y is off by one
-    )
 end
 --#endregion
 

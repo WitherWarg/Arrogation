@@ -1366,19 +1366,6 @@ return {
           properties = {},
           objects = {
             {
-              id = 117,
-              name = "",
-              type = "",
-              shape = "point",
-              x = 464,
-              y = 848,
-              width = 0,
-              height = 0,
-              rotation = 0,
-              visible = true,
-              properties = {}
-            },
-            {
               id = 132,
               name = "",
               type = "",

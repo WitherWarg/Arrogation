@@ -125,7 +125,30 @@ function World:draw(alpha, draw_over)
    love.graphics.setColor(color)
 end
 
-function World:queryRectangleArea(x1, y1, x2, y2)
+local function filter_query(world, colliders, collision_class)
+   if not collision_class then
+      return colliders
+   end
+
+   local filter_category = world.collision_classes[collision_class].category
+
+   for i, collider in ipairs(colliders) do
+      local is_removed = true
+      for _, category in ipairs({collider:getCategory()}) do
+         if category == filter_category then
+            is_removed = false
+         end
+      end
+
+      if is_removed then
+         table.remove(colliders, i)
+      end
+   end
+
+   return colliders
+end
+
+function World:queryRectangleArea(x1, y1, x2, y2, collision_class)
    -- query a bounding-box aligned area for colliders
    --[[
       inputs:
@@ -140,7 +163,7 @@ function World:queryRectangleArea(x1, y1, x2, y2)
       return true
    end
    self:queryBoundingBox(x1, y1, x2, y2, callback)
-   return colls
+   return filter_query(self, colls, collision_class)
 end
 
 local function check_vertices(vertices)
@@ -204,7 +227,7 @@ local function are_touching(coll1, coll2)
    error("collider types not recognized ".. tostring(coll1.collider_type)..', '..tostring(coll2.collider_type))
 end
 
-local function query_region(world, coll_type, args)
+local function query_region(world, coll_type, args, collision_class)
    local collider = world:newCollider(coll_type, args)
    collider:setSensor(true)
    local colls = {}
@@ -221,7 +244,7 @@ local function query_region(world, coll_type, args)
    local in_bounding_box = world:queryBoundingBox(
       ax, ay, bx, by, callback)
    collider:destroy()
-   return colls
+   return filter_query(world, colls, collision_class)
 end
 
 function World:_disable_callbacks()
@@ -242,14 +265,19 @@ function World:queryPolygonArea(...)
         colls: table, all Colliders intersecting the area
    --]]
    local vertices = {...}
+   if type(vertices[#vertices]) == 'string' then
+      collision_class = vertices[#vertices]
+      table.remove(vertices, #vertices)
+   end
    if type(vertices[1]) == 'table' then
       vertices = vertices[1]
    end
+
    check_vertices(vertices)
-   return query_region(self, COLLIDER_TYPES.POLYGON, vertices)
+   return query_region(self, COLLIDER_TYPES.POLYGON, vertices, collision_class)
 end
 
-function World:queryCircleArea(x, y, r)
+function World:queryCircleArea(x, y, r, collision_class)
    -- get all colliders in a circle are
    --[[
       inputs:
@@ -257,7 +285,7 @@ function World:queryCircleArea(x, y, r)
       outputs:
         colls: table: colliders in area
    ]]--
-   return query_region(self, COLLIDER_TYPES.CIRCLE, {x, y, r})
+   return query_region(self, COLLIDER_TYPES.CIRCLE, {x, y, r}, collision_class)
 end
 
 function World:queryEdgeArea(...)
@@ -269,11 +297,16 @@ function World:queryEdgeArea(...)
         colls: table: colliders intersecting these lines
    --]]
    local vertices = {...}
+   if type(vertices[#vertices]) == 'string' then
+      collision_class = vertices[#vertices]
+      table.remove(vertices, #vertices)
+   end
    if type(vertices[1]) == 'table' then
       vertices = vertices[1]
    end
+
    check_vertices(vertices)
-   return  query_region(self, 'Edge', vertices)
+   return query_region(self, 'Edge', vertices, collision_class)
 end
 
 function World:update(dt)
@@ -337,7 +370,7 @@ end
 
 function World:addCollisionClasses(...)
    for _, collision_class in pairs({...}) do
-      assert(type(collision_class) == 'table', 'All collision classes must be in a table (see World:addCollisionClasses)')
+      assert(type(collision_class) == 'table', 'All collision classes must be a table (see World:addCollisionClasses)')
       self:addCollisionClass(collision_class)
   end
 end

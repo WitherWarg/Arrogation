@@ -41,6 +41,17 @@ end
 
 function Level:draw()
     camera_manager:draw()
+
+    -- local player = map_manager.player
+    -- local x, y = player.collider:getPosition()
+    -- camera_manager.camera:push()
+    -- love.graphics.line(
+    --     x - player.width/2, y + player.height/2 + 1,
+    --     x + player.width/2, y + player.height/2 + 1
+    -- )
+    -- camera_manager.camera:pop()
+
+    -- camera_manager:debugWorld()
 end
 
 function Level:leave()

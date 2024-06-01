@@ -618,9 +618,6 @@
    <object id="11" x="368" y="912" width="1072"/>
   </objectgroup>
   <objectgroup id="36" name="checkpoint">
-   <object id="117" x="464" y="848">
-    <point/>
-   </object>
    <object id="132" x="888" y="304" width="16" height="41"/>
   </objectgroup>
  </group>

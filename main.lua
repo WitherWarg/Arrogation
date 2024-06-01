@@ -22,6 +22,8 @@ function love.load()
     require('utilities.debug')
     require('utilities.printf')
 
+    quit = love.event.quit
+
     Level = require('gamestates.level')
     MainMenu = require('gamestates.main_menu')
     
