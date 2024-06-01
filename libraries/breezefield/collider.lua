@@ -92,7 +92,7 @@ function Collider:setCollisionClasses(world, ...)
    for _, collision_class in ipairs(collision_classes) do   
       assert(
          world.collision_classes[collision_class:lower()] ~= nil,
-         "Collision class " .. collision_class  .. " is nil (see World:addCollisionClass)"
+         "Collision class " .. collision_class  .. " is not defined (see World:addCollisionClass)"
       )
 
       collision_class = world.collision_classes[collision_class:lower()]
@@ -108,7 +108,7 @@ function Collider:setCollisionClasses(world, ...)
       for _, collision_class in ipairs(ignores) do
          assert(
             world.collision_classes[collision_class:lower()] ~= nil,
-            "Collision class " .. collision_class .. " is nil (see World:addCollisionClass)"
+            "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
          )
          table.insert(masks, world.collision_classes[collision_class:lower()].category)
       end

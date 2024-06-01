@@ -10,7 +10,6 @@ function Level:enter(previous, level_name)
     local bf = require('libraries.breezefield')
     world = bf.newWorld(0, 2000)
     world:addCollisionClasses({'player'}, {'wall'}, {'border'})
-    -- TODO addCollisionClass should take in a table as input
 
     local MapManager = require('managers.map_manager')
     map_manager = MapManager(level_name)

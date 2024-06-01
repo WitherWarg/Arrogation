@@ -336,21 +336,21 @@ function World:newCollider(collider_type, shape_arguments, table_to_use)
 end
 
 function World:addCollisionClasses(...)
-   for _, t in pairs({...}) do
-      assert(type(t) == 'table', 'All arguments must be in a table (see World:addCollisionClasses)')
-      self:addCollisionClass(t[1], t[2] or {})
+   for _, collision_class in pairs({...}) do
+      assert(type(collision_class) == 'table', 'All collision classes must be in a table (see World:addCollisionClasses)')
+      self:addCollisionClass(collision_class)
   end
 end
 
-function World:addCollisionClass(collision_class, ignores)
-   local table_len = 0
+function World:addCollisionClass(collision_class)
+   local class_number = 0
     for _, _ in pairs(self.collision_classes) do
-        table_len = table_len + 1
+        class_number = class_number + 1
     end
 
-   self.collision_classes[collision_class:lower()] = {
-      category = table_len + 1,
-      ignores = ignores or {}
+   self.collision_classes[collision_class[1]:lower()] = {
+      category = class_number + 1,
+      ignores = collision_class.ignores or {}
    }
 end
 
