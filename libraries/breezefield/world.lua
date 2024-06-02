@@ -360,6 +360,10 @@ function World:newCollider(collider_type, shape_arguments, table_to_use)
    set_funcs(o, o.shape)
    set_funcs(o, o.fixture)
 
+   o.fixture:setUserData(o)
+
+   o.normals = {}
+
    -- index by self for now
    o._world = self
    table.insert(self.colliders, o)

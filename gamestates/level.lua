@@ -7,9 +7,7 @@ function Level:enter(previous, level_name)
     WORLD_WIDTH = WIDTH / WORLD_SCALE
     WORLD_HEIGHT = HEIGHT / WORLD_SCALE
 
-    local bf = require('libraries.breezefield')
-    world = bf.newWorld(0, 2000)
-    world:addCollisionClasses({'player'}, {'wall'}, {'border'})
+    world = require('managers.world_manager')
 
     local MapManager = require('managers.map_manager')
     map_manager = MapManager(level_name)
@@ -42,16 +40,9 @@ end
 function Level:draw()
     camera_manager:draw()
 
-    -- local player = map_manager.player
-    -- local x, y = player.collider:getPosition()
-    -- camera_manager.camera:push()
-    -- love.graphics.line(
-    --     x - player.width/2, y + player.height/2 + 1,
-    --     x + player.width/2, y + player.height/2 + 1
-    -- )
-    -- camera_manager.camera:pop()
+    -- local normals = map_manager.player.collider.normals
 
-    -- camera_manager:debugWorld()
+    -- debug(normals["wall"].x, normals["wall"].y)
 end
 
 function Level:leave()

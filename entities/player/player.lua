@@ -26,6 +26,7 @@ local AIR_JUMP_VELOCITY = -440
 local WALL_JUMP_VELOCITY = vector(175, -520)
 local WALL_SLIDE_SPEED = 12
 local WALL_BUFFER = 0.07
+local WALL_QUERY_LENGTH = 10
 
 local PLAYER_SCALE = 1
 local SPRITE_SHEET = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
@@ -72,6 +73,7 @@ local Player = Class {
     can_switch_state = true,
 
     direction = 1,
+    wall_direction = 1,
 
     is_jump_buffered = false,
     jump_timer = TIMER,
@@ -115,7 +117,7 @@ function Player:update(dt)
     end)
 
     groundState(self)
-    -- wallState(self)
+    wallState(self)
     switchState(self)
     self.animation:update(dt)
 
@@ -148,36 +150,6 @@ function Player:getInputX()
     end
 
     return ix
-end
-
-function Player:getNormal(collision_class)
-    assert(collision_class ~= nil, 'Collision class must exist.')
-
-    local nx, ny = 0, 0
-    local data_list = {}
-
-    self.collider:enter(collision_class)
-    self.collider:exit(collision_class)
-    if self.collider:stay(collision_class) then
-        data_list = self.collider:getStayCollisionData(collision_class)
-    end
-
-    for i, data in ipairs(data_list) do
-        if data.contact:isDestroyed() then
-            table.remove(data_list, i)
-        else
-            local x, y = data.contact:getNormal()
-
-            if x ~= 0 then
-                nx = x
-            end
-            if y ~= 0 then
-                ny = y
-            end
-        end
-    end
-
-    return nx, ny
 end
 
 function Player:draw()
@@ -262,8 +234,10 @@ function jump(self)
             self.is_walled_buffered = false
             timer.cancel(self.wall_timer)
 
-            local nx, _ = self:getNormal('wall')
-            self.collider:applyLinearImpulse(WALL_JUMP_VELOCITY.x * -nx, WALL_JUMP_VELOCITY.y) -- Face away from wall direction (nx)
+            self.collider:applyLinearImpulse(
+                WALL_JUMP_VELOCITY.x,
+                WALL_JUMP_VELOCITY.y
+            )
         elseif (not self.is_grounded and not self.is_walled) and self.air_jumps < MAX_AIR_JUMPS then
             self.collider:applyLinearImpulse(0, AIR_JUMP_VELOCITY)
             self.air_jumps = self.air_jumps + 1
@@ -293,9 +267,9 @@ end
 function groundState(self)
     local x, y = self.collider:getPosition()
 
-    self.is_grounded = #world:queryEdgeArea(
-        x - GROUND_QUERY_LENGTH/2, y + self.height/2 + 1,
-        x + GROUND_QUERY_LENGTH/2, y + self.height/2 + 1,
+    self.is_grounded = #world:queryRectangleArea(
+        x - GROUND_QUERY_LENGTH/2, y + self.height/2,
+        x + GROUND_QUERY_LENGTH/2, y + self.height/2,
         'wall'
     ) > 0
 
@@ -311,9 +285,14 @@ function groundState(self)
 end
 
 function wallState(self)
-    local nx, _ = self:getNormal('wall')
     local _, vy = self.collider:getLinearVelocity()
-    self.is_walled = math.abs(nx) == 1 and not self.is_grounded and vy > 0 and self.has_wall_jump_item
+    local x, y = self.collider:getPosition()
+
+    self.is_walled = #world:queryRectangleArea(
+        x + self.width/2 * self.direction, y - WALL_QUERY_LENGTH/2,
+        x + self.width/2 * self.direction, y + WALL_QUERY_LENGTH/2,
+        'wall'
+    ) > 0 and self.has_wall_jump_item and vy > 0 and not self.is_grounded
 
     if self.is_walled then
         self.is_walled_buffered = true
@@ -383,11 +362,6 @@ function setDirection(self)
 
     if not input("right") and input("left") then
         self.direction = -1
-    end
-
-    if self.is_walled then
-        local nx, _ = self:getNormal('wall')
-        self.direction = -math.sign(nx) -- Face away from wall direction (nx)
     end
 end
 --#endregion

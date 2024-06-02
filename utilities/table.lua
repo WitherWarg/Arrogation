@@ -4,7 +4,7 @@ function table.print(t, keys)
     local output = ""
 
     for key1, value in pairs(t) do
-        output = output .. key1 .. ': ' .. tostring(value)
+        output = output .. tostring(key1) .. ': ' .. tostring(value)
 
         if keys and #keys > 0 then
             for _, key2 in ipairs(keys) do
