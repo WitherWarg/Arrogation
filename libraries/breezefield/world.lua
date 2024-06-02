@@ -132,7 +132,8 @@ local function filter_query(world, colliders, collision_class)
 
    local filter_category = world.collision_classes[collision_class].category
 
-   for i, collider in ipairs(colliders) do
+   for i = #colliders, 1, -1 do
+      local collider = colliders[i]
       local is_removed = true
       for _, category in ipairs({collider:getCategory()}) do
          if category == filter_category then
