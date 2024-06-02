@@ -363,7 +363,7 @@ function World:newCollider(collider_type, shape_arguments, table_to_use)
 
    o.fixture:setUserData(o)
 
-   o.normals = {}
+   o.normal = {}
 
    -- index by self for now
    o._world = self

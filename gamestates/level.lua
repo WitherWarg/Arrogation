@@ -39,10 +39,6 @@ end
 
 function Level:draw()
     camera_manager:draw()
-
-    -- local normals = map_manager.player.collider.normals
-
-    -- debug(normals["wall"].x, normals["wall"].y)
 end
 
 function Level:leave()

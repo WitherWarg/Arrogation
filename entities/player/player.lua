@@ -13,7 +13,7 @@ local JUMP_HALT_POWER = 0.7
 local JUMP_BUFFER = 0.03
 
 local GROUND_BUFFER = 0.05
-local GROUND_QUERY_LENGTH = 5
+local GROUND_QUERY_LENGTH = 6
 
 local DASH_TIME = 0.2
 local DASH_SPEED = 400
@@ -29,10 +29,11 @@ local WALL_BUFFER = 0.07
 local WALL_QUERY_LENGTH = 10
 
 local PLAYER_SCALE = 1
-local SPRITE_SHEET = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
-local SHEET_WIDTH, SHEET_HEIGHT = SPRITE_SHEET:getDimensions()
-local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
 local PLAYER_WIDTH, PLAYER_HEIGHT = 12, 28
+
+local sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
+local SHEET_WIDTH, SHEET_HEIGHT = sprite_sheet:getDimensions()
+local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
 --#endregion
 
 --#region animations
@@ -58,14 +59,14 @@ end
 local run
 local dash
 local jump
-local wallSlide
-local fallDamp
+local wall_slide
+local fall_damp
 
-local groundState
-local wallState
-local switchState
+local ground_state_update
+local wall_state_update
+local switch_state
 
-local setDirection
+local set_direction
 --#endregion
 
 local Player = Class {
@@ -116,9 +117,9 @@ function Player:update(dt)
         dash(self, wait)
     end)
 
-    groundState(self)
-    wallState(self)
-    switchState(self)
+    ground_state_update(self)
+    wall_state_update(self)
+    switch_state(self)
     self.animation:update(dt)
 
     if self.is_dashing then
@@ -130,12 +131,12 @@ function Player:update(dt)
         self.air_jumps = 0
     end
 
-    setDirection(self)
+    set_direction(self)
 
     run(self)
     jump(self)
-    wallSlide(self)
-    fallDamp(self)
+    wall_slide(self)
+    fall_damp(self)
 end
 
 function Player:getInputX()
@@ -160,7 +161,7 @@ function Player:draw()
     end
 
     self.animation:draw(
-        SPRITE_SHEET,
+        sprite_sheet,
         self.collider:getX(),
         self.collider:getY(),
         nil,
@@ -235,7 +236,7 @@ function jump(self)
             timer.cancel(self.wall_timer)
 
             self.collider:applyLinearImpulse(
-                WALL_JUMP_VELOCITY.x,
+                WALL_JUMP_VELOCITY.x * self.direction,
                 WALL_JUMP_VELOCITY.y
             )
         elseif (not self.is_grounded and not self.is_walled) and self.air_jumps < MAX_AIR_JUMPS then
@@ -250,21 +251,21 @@ function jump(self)
     end
 end
 
-function wallSlide(self)
+function wall_slide(self)
     if self.is_walled then
         local vx, vy = self.collider:getLinearVelocity()
         self.collider:setLinearVelocity(vx, math.min(vy, WALL_SLIDE_SPEED))
     end
 end
 
-function fallDamp(self)
+function fall_damp(self)
     local vx, vy = self.collider:getLinearVelocity()
     self.collider:setLinearVelocity(vx, math.min(vy, MAX_FALL_SPEED))
 end
 --#endregion
 
 --#region state updates
-function groundState(self)
+function ground_state_update(self)
     local x, y = self.collider:getPosition()
 
     self.is_grounded = #world:queryRectangleArea(
@@ -284,15 +285,27 @@ function groundState(self)
     end
 end
 
-function wallState(self)
+function wall_state_update(self)
     local _, vy = self.collider:getLinearVelocity()
-    local x, y = self.collider:getPosition()
 
-    self.is_walled = #world:queryRectangleArea(
-        x + self.width/2 * self.direction, y - WALL_QUERY_LENGTH/2,
-        x + self.width/2 * self.direction, y + WALL_QUERY_LENGTH/2,
-        'wall'
-    ) > 0 and self.has_wall_jump_item and vy > 0 and not self.is_grounded
+    if not (self.has_wall_jump_item and vy > 0 and not self.is_grounded) then
+        self.is_walled = false
+    else
+        local x, y = self.collider:getPosition()
+        
+        self.is_walled = #table.merge(
+            world:queryRectangleArea(
+                x + self.width/2, y - WALL_QUERY_LENGTH/2,
+                x + self.width/2, y + WALL_QUERY_LENGTH/2,
+                'wall'
+            ),
+            world:queryRectangleArea(
+                x - self.width/2, y - WALL_QUERY_LENGTH/2,
+                x - self.width/2, y + WALL_QUERY_LENGTH/2,
+                'wall'
+            )
+        ) > 0
+    end
 
     if self.is_walled then
         self.is_walled_buffered = true
@@ -305,7 +318,7 @@ function wallState(self)
     end
 end
 
-function switchState(self)
+function switch_state(self)
     if not self.can_switch_state then
         return
     end
@@ -354,8 +367,7 @@ function switchState(self)
 end
 --#endregion
 
---#region direction
-function setDirection(self)
+function set_direction(self)
     if input("right") and not input("left") then
         self.direction = 1
     end
@@ -363,7 +375,10 @@ function setDirection(self)
     if not input("right") and input("left") then
         self.direction = -1
     end
+
+    if self.is_walled and self.collider.normal['wall'].x ~= 0 then
+        self.direction = -self.collider.normal['wall'].x -- Player faces away from wall, so contact point is flipped
+    end
 end
---#endregion
 
 return Player
