@@ -288,7 +288,7 @@ end
 function wall_state_update(self)
     local _, vy = self.collider:getLinearVelocity()
 
-    if not (self.has_wall_jump_item and vy > 0 and not self.is_grounded) then
+    if not self.has_wall_jump_item or vy <= 0 or self.is_grounded or self.collider.normal['wall'].x == 0 then
         self.is_walled = false
     else
         local x, y = self.collider:getPosition()
@@ -376,7 +376,7 @@ function set_direction(self)
         self.direction = -1
     end
 
-    if self.is_walled and self.collider.normal['wall'].x ~= 0 then
+    if self.is_walled then
         self.direction = -self.collider.normal['wall'].x -- Player faces away from wall, so contact point is flipped
     end
 end

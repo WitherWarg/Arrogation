@@ -1,3 +1,2 @@
 Add all and consequently add collides
 Make filter_query function filter multiple classes
-Make normals table for all colliders
