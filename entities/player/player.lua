@@ -106,7 +106,7 @@ function Player:init(object)
     self.x, self.y = nil, nil
 
     self.collider:setMass(1)
-    self.collider:setCollisionClasses(world, 'player')
+    world:setCollisionClasses(self.collider, 'player')
 
     self.animation = animations.idle
 end

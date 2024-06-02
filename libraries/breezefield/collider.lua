@@ -75,46 +75,4 @@ function Collider:collider_contacts()
    return colliders
 end
 
-function Collider:setCollisionClasses(world, ...)
-   assert(type(world) == 'table', "World must be provided as the first argument.")
-   
-   local collision_classes = {...}
-   assert(#collision_classes > 0, "Must provide at least one collision class")
-
-   for i, collision_class1 in ipairs(collision_classes) do
-      for j, collision_class2 in ipairs(collision_classes) do
-         assert(collision_class1 ~= collision_class2 or i == j, "Cannot provide the same collision class")
-      end
-   end
-
-   local categories = {}
-   local list_of_ignores = {}
-   for _, collision_class in ipairs(collision_classes) do   
-      assert(
-         world.collision_classes[collision_class:lower()] ~= nil,
-         "Collision class " .. collision_class  .. " is not defined (see World:addCollisionClass)"
-      )
-
-      collision_class = world.collision_classes[collision_class:lower()]
-
-      table.insert(categories, collision_class.category)
-      table.insert(list_of_ignores, collision_class.ignores)
-   end
-
-   self.fixture:setCategory(unpack(categories))
-   
-   local masks = {}
-   for _, ignores in ipairs(list_of_ignores) do
-      for _, collision_class in ipairs(ignores) do
-         assert(
-            world.collision_classes[collision_class:lower()] ~= nil,
-            "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
-         )
-         table.insert(masks, world.collision_classes[collision_class:lower()].category)
-      end
-   end
-
-   self.fixture:setMask(unpack(masks))
-end
-
 return Collider

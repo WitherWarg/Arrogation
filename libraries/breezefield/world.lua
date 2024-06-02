@@ -381,15 +381,57 @@ function World:addCollisionClasses(...)
 end
 
 function World:addCollisionClass(collision_class)
-   local class_number = 0
+   local category_number = 0
     for _, _ in pairs(self.collision_classes) do
-        class_number = class_number + 1
+        category_number = category_number + 1
     end
 
    self.collision_classes[collision_class[1]:lower()] = {
-      category = class_number + 1,
+      category = category_number + 1,
       ignores = collision_class.ignores or {}
    }
+end
+
+function World:setCollisionClasses(collider, ...)
+   assert(type(self) == 'table', "Collider must be provided as the first argument.")
+   
+   local collision_classes = {...}
+   assert(#collision_classes > 0, "Must provide at least one collision class")
+
+   for i, collision_class1 in ipairs(collision_classes) do
+      for j, collision_class2 in ipairs(collision_classes) do
+         assert(collision_class1 ~= collision_class2 or i == j, "Cannot provide the same collision class")
+      end
+   end
+
+   local categories = {}
+   local list_of_ignores = {}
+   for _, collision_class in ipairs(collision_classes) do   
+      assert(
+         self.collision_classes[collision_class:lower()] ~= nil,
+         "Collision class " .. collision_class  .. " is not defined (see World:addCollisionClass)"
+      )
+
+      collision_class = self.collision_classes[collision_class:lower()]
+
+      table.insert(categories, collision_class.category)
+      table.insert(list_of_ignores, collision_class.ignores)
+   end
+
+   collider:setCategory(unpack(categories))
+   
+   local masks = {}
+   for _, ignores in ipairs(list_of_ignores) do
+      for _, collision_class in ipairs(ignores) do
+         assert(
+            self.collision_classes[collision_class:lower()] ~= nil,
+            "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
+         )
+         table.insert(masks, self.collision_classes[collision_class:lower()].category)
+      end
+   end
+
+   collider:setMask(unpack(masks))
 end
 
 return World
