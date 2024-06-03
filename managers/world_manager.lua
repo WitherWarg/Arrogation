@@ -3,7 +3,8 @@ local world = bf.newWorld(0, 2000)
 world:addCollisionClasses(
     {'player', ignores = {'player'}},
     {'wall', ignores = {'wall'}},
-    {'border', ignores = {'border'}}
+    {'border', ignores = {'border'}},
+    {'flag', ignores = {'all'}}
 )
 
 local function update_normals(parent_a, parent_b, nx, ny, is_collision_exit)

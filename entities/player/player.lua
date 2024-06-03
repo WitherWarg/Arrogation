@@ -30,13 +30,14 @@ local WALL_QUERY_LENGTH = 10
 
 local PLAYER_SCALE = 1
 local PLAYER_WIDTH, PLAYER_HEIGHT = 12, 28
-
-local sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
-local SHEET_WIDTH, SHEET_HEIGHT = sprite_sheet:getDimensions()
-local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
 --#endregion
 
 --#region animations
+local sprite_sheet = love.graphics.newImage('entities/player/animations/Colour2/Outline/SpriteSheet.png')
+local FRAME_WIDTH, FRAME_HEIGHT = 120, 80
+
+local grid = anim8.newGrid(FRAME_WIDTH, FRAME_HEIGHT, sprite_sheet:getWidth(), sprite_sheet:getHeight())
+
 local animations = {
     idle = { frames = 10, row = 17, durations = { ['1-4'] = 0.1, ['4-4'] = 0.5, ['5-10'] = 0.15 } },
     run = { frames = 10, row = 21, durations = 0.1 },
@@ -46,8 +47,6 @@ local animations = {
     dash = { frames = 2, row = 12, durations = 0.1 },
     wall_slide = { frames = 3, row = 30, durations = 0.1 },
 }
-
-local grid = anim8.newGrid(FRAME_WIDTH, FRAME_HEIGHT, SHEET_WIDTH, SHEET_HEIGHT)
 
 for name, data in pairs(animations) do
     animations[name] = anim8.newAnimation(grid('1-' .. data.frames, data.row), data.durations, data.onLoop)
@@ -99,11 +98,11 @@ local Player = Class {
 
 function Player:init(object)
     object.width, object.height = PLAYER_WIDTH * PLAYER_SCALE, PLAYER_HEIGHT * PLAYER_SCALE
-    object.y = object.y - object.height
 
     local Entity = require('entities.entity')
     Entity.init(self, object)
 
+    self.collider:setPosition(self.x, self.y - self.height/2)
     self.x, self.y = nil, nil
 
     self.collider:setMass(1)
@@ -217,9 +216,8 @@ function jump(self)
         end)
     end
 
-    local can_air_jump = self.air_jumps < MAX_AIR_JUMPS and self.has_air_jump_item
-
-    if self.is_jump_buffered and (self.is_grounded_buffered or can_air_jump or self.is_walled_buffered) then
+    if self.is_jump_buffered and
+    (self.is_grounded_buffered or self.air_jumps < MAX_AIR_JUMPS and self.has_air_jump_item or self.is_walled_buffered) then
         self.is_jump_buffered = false
         timer.cancel(self.jump_timer)
 
@@ -288,7 +286,8 @@ end
 function wall_state_update(self)
     local _, vy = self.collider:getLinearVelocity()
 
-    if not self.has_wall_jump_item or vy <= 0 or self.is_grounded or self.collider.normal['wall'].x == 0 then
+    if not self.has_wall_jump_item or vy <= 0 or self.is_grounded
+    or not self.collider.normal or self.collider.normal['wall'].x == 0 then
         self.is_walled = false
     else
         local x, y = self.collider:getPosition()

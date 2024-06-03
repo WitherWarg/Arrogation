@@ -10,30 +10,25 @@ local CameraManager = Class {}
 function CameraManager:init(map_manager, scale, target_collider)
     local Camera = require('libraries.camera')
 
-    self.scale = scale
     self.camera = Camera{ scale = scale, mode = 'all' }
 
     self.map = map_manager.map
     self.layers = {}
 
-    local player_index = 0
-
-    for i, layer in ipairs(map_manager.map.layers) do
+    for _, layer in ipairs(map_manager.map.layers) do
         if layer.type == 'tilelayer' then
             self.camera:addLayer(layer.name, 1, { relativeScale = layer.parallaxx })
-            table.insert(self.layers, layer)
-
-            if string.find(layer.name, 'foreplayer') then
-                local last = map_manager.map.layers[i - 1]
-                if string.find(last.name, 'foreground') then
-                    player_index = i
+            for name, active_object in pairs(map_manager.active_objects) do
+                local name_after_dot = string.gsub(string.match(layer.name, "(%..*)$"), "%.", "")
+                if name == name_after_dot then
+                    for _, object in ipairs(active_object) do
+                        table.insert(self.layers, object)
+                    end
+                else
+                    table.insert(self.layers, layer)
                 end
             end
         end
-    end
-
-    for i, player in ipairs(map_manager.players) do
-        table.insert(self.layers, player_index + i - 1, player)
     end
 
     self.left, self.right = math.huge, 0
@@ -91,7 +86,7 @@ function CameraManager:draw()
     end
 end
 
-function CameraManager:debugWorld()
+function CameraManager:world()
     self.camera:push()
 
     world:draw()

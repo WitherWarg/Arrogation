@@ -13,7 +13,7 @@ function Level:enter(previous, level_name)
     map_manager = MapManager(level_name)
 
     local CameraManager = require('managers.camera_manager')
-    camera_manager = CameraManager(map_manager, WORLD_SCALE, map_manager.player.collider)
+    camera_manager = CameraManager(map_manager, WORLD_SCALE, map_manager.players[math.random(#map_manager.players)].collider)
 
     pause = false
 

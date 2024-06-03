@@ -82,6 +82,8 @@ function World:new(...)
       default = {category = 1, ignores = {}},
    }
 
+   w.max_collision_classes = 16 -- This is a limitation imposed by the LÖVE2D framework
+
    return w
 end
 
@@ -388,7 +390,8 @@ function World:addCollisionClass(collision_class)
 
    self.collision_classes[collision_class[1]:lower()] = {
       category = category_number + 1,
-      ignores = collision_class.ignores or {}
+      ignores = collision_class.ignores or {},
+      collides = collision_class.collides or {}
    }
 end
 
@@ -404,8 +407,9 @@ function World:setCollisionClasses(collider, ...)
       end
    end
 
-   local categories = {}
+   local list_of_categories = {}
    local list_of_ignores = {}
+   local list_of_collides = {}
    for _, collision_class in ipairs(collision_classes) do   
       assert(
          self.collision_classes[collision_class:lower()] ~= nil,
@@ -414,20 +418,37 @@ function World:setCollisionClasses(collider, ...)
 
       collision_class = self.collision_classes[collision_class:lower()]
 
-      table.insert(categories, collision_class.category)
+      table.insert(list_of_categories, collision_class.category)
       table.insert(list_of_ignores, collision_class.ignores)
+      table.insert(list_of_collides, collision_class.collides)
    end
 
-   collider:setCategory(unpack(categories))
+   collider:setCategory(unpack(list_of_categories))
    
    local masks = {}
    for _, ignores in ipairs(list_of_ignores) do
       for _, collision_class in ipairs(ignores) do
-         assert(
-            self.collision_classes[collision_class:lower()] ~= nil,
-            "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
-         )
-         table.insert(masks, self.collision_classes[collision_class:lower()].category)
+         if collision_class == 'all' then
+            for category = 1, self.max_collision_classes do
+               table.insert(masks, category)
+            end
+         else
+            assert(
+               self.collision_classes[collision_class:lower()] ~= nil,
+               "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
+            )
+            table.insert(masks, self.collision_classes[collision_class:lower()].category)
+         end
+      end
+   end
+
+   for _, collides in ipairs(list_of_collides) do
+      for _, collision_class in ipairs(collides) do
+         for i = #masks, 1, -1 do
+            if masks[i] == self.collision_classes[collision_class:lower()].category then
+               table.remove(masks, i)
+            end
+         end
       end
    end
 
