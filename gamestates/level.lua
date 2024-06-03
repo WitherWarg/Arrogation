@@ -39,8 +39,12 @@ function Level:update(dt)
 
     timer.update(dt)
     world:update(dt)
-    map_manager:update(dt)
-    camera_manager:update()
+    if map_manager then
+        map_manager:update(dt)        
+    end
+    if camera_manager then
+        camera_manager:update()
+    end
 end
 
 function Level:draw()
