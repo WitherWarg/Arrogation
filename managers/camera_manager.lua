@@ -7,7 +7,7 @@ local DOWN_THRESHOLD = 570
 
 local CameraManager = Class {}
 
-function CameraManager:init(map_manager, scale, target_collider)
+function CameraManager:init(map_manager, scale)
     local Camera = require('libraries.camera')
 
     self.camera = Camera{ scale = scale, mode = 'all' }
@@ -42,12 +42,12 @@ function CameraManager:init(map_manager, scale, target_collider)
         self.bottom = math.max(self.bottom, border.y)
     end
 
-    self.target_collider = target_collider
-    self:follow(target_collider:getPosition())
+    self.target = map_manager.players[math.random(#map_manager.players)].collider
+    self:follow(self.target:getPosition())
 end
 
 function CameraManager:update()
-    local _, vy = self.target_collider:getLinearVelocity()
+    local _, vy = self.target:getLinearVelocity()
     local x, y = self.camera:getTranslation()
 
     local Y_SPEED_PERCENT = UP_SPEED_PERCENT
@@ -57,8 +57,8 @@ function CameraManager:update()
     end
 
     self:follow(
-        math.lerp(x, self.target_collider:getX(), X_SPEED_PERCENT/100),
-        math.lerp(y, self.target_collider:getY(), Y_SPEED_PERCENT/100)
+        math.lerp(x, self.target:getX(), X_SPEED_PERCENT/100),
+        math.lerp(y, self.target:getY(), Y_SPEED_PERCENT/100)
     )
     self:clamp()
 end

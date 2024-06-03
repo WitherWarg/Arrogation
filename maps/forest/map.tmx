@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="90" height="57" tilewidth="16" tileheight="16" infinite="0" nextlayerid="56" nextobjectid="186">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="90" height="57" tilewidth="16" tileheight="16" infinite="0" nextlayerid="56" nextobjectid="188">
  <editorsettings>
   <export target="map.lua" format="lua"/>
  </editorsettings>
@@ -740,7 +740,7 @@
    <object id="11" x="368" y="912" width="1072"/>
   </objectgroup>
   <objectgroup id="36" name="flag">
-   <object id="185" x="895" y="347">
+   <object id="187" x="895" y="347">
     <point/>
    </object>
   </objectgroup>

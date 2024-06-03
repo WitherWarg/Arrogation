@@ -10,7 +10,7 @@ return {
   tilewidth = 16,
   tileheight = 16,
   nextlayerid = 56,
-  nextobjectid = 186,
+  nextobjectid = 188,
   properties = {},
   tilesets = {
     {
@@ -1520,7 +1520,7 @@ return {
           properties = {},
           objects = {
             {
-              id = 185,
+              id = 187,
               name = "",
               type = "",
               shape = "point",

@@ -1,12 +1,3 @@
-local bf = require('libraries.breezefield')
-local world = bf.newWorld(0, 2000)
-world:addCollisionClasses(
-    {'player', ignores = {'player'}},
-    {'wall', ignores = {'wall'}},
-    {'border', ignores = {'border'}},
-    {'flag', ignores = {'all'}}
-)
-
 local function update_normals(parent_a, parent_b, nx, ny, is_collision_exit)
     for name, collision_class in pairs(world.collision_classes) do
         for _, category in ipairs({parent_a:getCategory()}) do
@@ -53,6 +44,18 @@ local function onPostSolve(a, b, contact, normalimpulse, tangentimpulse)
     
 end
 
-world:setCallbacks(onCollisionEnter, onCollisionExit, onPreSolve, onPostSolve)
+function newWorld()
+    local bf = require('libraries.breezefield')
+    local world = bf.newWorld(0, 2000)
+    world:addCollisionClasses(
+        {'player', ignores = {'player'}},
+        {'wall', ignores = {'wall'}},
+        {'border', ignores = {'border'}}
+    )
 
-return world
+    world:setCallbacks(onCollisionEnter, onCollisionExit, onPreSolve, onPostSolve)
+
+    return world
+end
+
+return newWorld

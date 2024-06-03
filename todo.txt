@@ -1,1 +1,2 @@
 Make filter_query function filter multiple classes
+Add destroy to world

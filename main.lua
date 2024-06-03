@@ -8,6 +8,8 @@ function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest") -- Best for drawing pixel art
 
+    math.randomseed(os.time())
+
     local new_image_data = love.image.newImageData("cursor/Colour2/Outline/cursor.png")
     local new_cursor_image = love.mouse.newCursor(new_image_data, 0, 0)
     love.mouse.setCursor(new_cursor_image)
@@ -21,8 +23,6 @@ function love.load()
     require('utilities.input')
     require('utilities.debug')
     require('utilities.printf')
-
-    quit = love.event.quit
 
     Level = require('gamestates.level')
     MainMenu = require('gamestates.main_menu')

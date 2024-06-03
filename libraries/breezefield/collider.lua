@@ -75,4 +75,71 @@ function Collider:collider_contacts()
    return colliders
 end
 
+function Collider:setCollisionClasses(...)
+   local collision_classes = {...}
+   assert(#collision_classes > 0, "Must provide at least one collision class")
+
+   for i, collision_class1 in ipairs(collision_classes) do
+      for j, collision_class2 in ipairs(collision_classes) do
+         assert(collision_class1 ~= collision_class2 or i == j, "Cannot provide the same collision class")
+      end
+   end
+
+   local list_of_categories = {}
+   local list_of_ignores = {}
+   local list_of_collides = {}
+   for _, collision_class in ipairs(collision_classes) do   
+      assert(
+         self._world.collision_classes[collision_class:lower()] ~= nil,
+         "Collision class " .. collision_class  .. " is not defined (see World:addCollisionClass)"
+      )
+
+      collision_class = self._world.collision_classes[collision_class:lower()]
+
+      table.insert(list_of_categories, collision_class.category)
+      table.insert(list_of_ignores, collision_class.ignores)
+      table.insert(list_of_collides, collision_class.collides)
+   end
+
+   self:setCategory(unpack(list_of_categories))
+   
+   local masks = {}
+   for _, ignores in ipairs(list_of_ignores) do
+      for _, collision_class in ipairs(ignores) do
+         if collision_class == 'all' then
+            for category = 1, self._world.max_collision_classes do
+               table.insert(masks, category)
+            end
+         else
+            assert(
+               self._world.collision_classes[collision_class:lower()] ~= nil,
+               "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
+            )
+            table.insert(masks, self._world.collision_classes[collision_class:lower()].category)
+         end
+      end
+   end
+
+   for _, collides in ipairs(list_of_collides) do
+      for _, collision_class in ipairs(collides) do
+         for i = #masks, 1, -1 do
+            if masks[i] == self._world.collision_classes[collision_class:lower()].category then
+               table.remove(masks, i)
+            end
+         end
+      end
+   end
+
+   self:setMask(unpack(masks))
+end
+
+function Collider:destroy()
+   self.fixture:destroy()
+   self.body:destroy()
+
+   self.fixture = nil
+   self.body = nil
+   self.shape = nil
+end
+
 return Collider

@@ -15,21 +15,17 @@ local animation = anim8.newAnimation(grid('1-5', 1), 0.1)
 local Flag = Class {}
 
 function Flag:init(object)
-    object.width, object.height = WIDTH * FLAG_SCALE, HEIGHT * FLAG_SCALE
-
-    local Entity = require('entities.entity')
-    Entity.init(self, object)
-
-    self.collider:setPosition(self.x - self.width/2, self.y - self.height/2)
-    self.x, self.y = self.collider:getPosition()
-
-    world:setCollisionClasses(self.collider, 'flag')
-    self.collider:setType('static')
+    self.width, self.height = WIDTH * FLAG_SCALE, HEIGHT * FLAG_SCALE
+    self.x, self.y = object.x - self.width/2, object.y - self.height/2
 
     self.animation = animation:clone()
 end
 
 function Flag:update(dt)
+    if #world:queryRectangleArea(self.x, self.y, self.x + self.width, self.y + self.height, 'player') > 0 then
+        return GS.switch(MainMenu)
+    end
+
     self.animation:update(dt)
 end
 

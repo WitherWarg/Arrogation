@@ -40,17 +40,17 @@ function World:new(...)
    function w.collide(obja, objb, coll_type, ...)
       -- collision event for two Colliders
       local function run_coll(obj1, obj2, ...)
-	 if obj1[coll_type] ~= nil then
-	    local e = obj1[coll_type](obj1, obj2, ...)
-	    if type(e) == 'function' then
-	       w.collide_events[#w.collide_events+1] = e
-	    end
-	 end
+         if obj1[coll_type] ~= nil then
+            local e = obj1[coll_type](obj1, obj2, ...)
+            if type(e) == 'function' then
+               w.collide_events[#w.collide_events+1] = e
+            end
+         end
       end
 
       if obja ~= nil and objb ~= nil then
-	 run_coll(obja, objb, ...)
-	 run_coll(objb, obja, ...)
+         run_coll(obja, objb, ...)
+         run_coll(objb, obja, ...)
       end
    end
 
@@ -363,8 +363,6 @@ function World:newCollider(collider_type, shape_arguments, table_to_use)
    set_funcs(o, o.shape)
    set_funcs(o, o.fixture)
 
-   o.fixture:setUserData(o)
-
    o.normal = {}
 
    -- index by self for now
@@ -395,64 +393,14 @@ function World:addCollisionClass(collision_class)
    }
 end
 
-function World:setCollisionClasses(collider, ...)
-   assert(type(self) == 'table', "Collider must be provided as the first argument.")
-   
-   local collision_classes = {...}
-   assert(#collision_classes > 0, "Must provide at least one collision class")
+function World:destroy()
+   self._world:destroy()
 
-   for i, collision_class1 in ipairs(collision_classes) do
-      for j, collision_class2 in ipairs(collision_classes) do
-         assert(collision_class1 ~= collision_class2 or i == j, "Cannot provide the same collision class")
-      end
+   for _, collider in pairs(self.colliders) do
+      collider = nil
    end
 
-   local list_of_categories = {}
-   local list_of_ignores = {}
-   local list_of_collides = {}
-   for _, collision_class in ipairs(collision_classes) do   
-      assert(
-         self.collision_classes[collision_class:lower()] ~= nil,
-         "Collision class " .. collision_class  .. " is not defined (see World:addCollisionClass)"
-      )
-
-      collision_class = self.collision_classes[collision_class:lower()]
-
-      table.insert(list_of_categories, collision_class.category)
-      table.insert(list_of_ignores, collision_class.ignores)
-      table.insert(list_of_collides, collision_class.collides)
-   end
-
-   collider:setCategory(unpack(list_of_categories))
-   
-   local masks = {}
-   for _, ignores in ipairs(list_of_ignores) do
-      for _, collision_class in ipairs(ignores) do
-         if collision_class == 'all' then
-            for category = 1, self.max_collision_classes do
-               table.insert(masks, category)
-            end
-         else
-            assert(
-               self.collision_classes[collision_class:lower()] ~= nil,
-               "Collision class " .. collision_class .. " is not defined (see World:addCollisionClass)"
-            )
-            table.insert(masks, self.collision_classes[collision_class:lower()].category)
-         end
-      end
-   end
-
-   for _, collides in ipairs(list_of_collides) do
-      for _, collision_class in ipairs(collides) do
-         for i = #masks, 1, -1 do
-            if masks[i] == self.collision_classes[collision_class:lower()].category then
-               table.remove(masks, i)
-            end
-         end
-      end
-   end
-
-   collider:setMask(unpack(masks))
+   self.colliders = nil
 end
 
 return World
