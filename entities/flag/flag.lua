@@ -22,7 +22,11 @@ function Flag:init(object)
 end
 
 function Flag:update(dt)
-    if #world:queryRectangleArea(self.x, self.y, self.x + self.width, self.y + self.height, 'player') > 0 then
+    local players = world:queryRectangleArea(
+        self.x - self.width/2, self.y - self.height/2,
+        self.x + self.width/2, self.y + self.height/2,
+        'player')
+    if #players > 0 then
         return GS.switch(MainMenu)
     end
 
