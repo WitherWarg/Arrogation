@@ -53,7 +53,7 @@ function newWorld()
         {'border', ignores = {'border'}}
     )
 
-    world:setCallbacks(onCollisionEnter, onCollisionExit, onPreSolve, onPostSolve)
+    world:setCallbacks(onCollisionEnter, onCollisionExit, onPreSolve, onPostSolve) -- Note to self, comment out to get callbacks
 
     return world
 end

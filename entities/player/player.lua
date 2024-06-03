@@ -23,7 +23,7 @@ local MAX_DASHES = 1
 local MAX_AIR_JUMPS = 1
 local AIR_JUMP_VELOCITY = -440
 
-local WALL_JUMP_VELOCITY = vector(175, -520)
+local WALL_JUMP_VELOCITY = vector(500, -520)
 local WALL_SLIDE_SPEED = 12
 local WALL_BUFFER = 0.07
 local WALL_QUERY_LENGTH = 10
