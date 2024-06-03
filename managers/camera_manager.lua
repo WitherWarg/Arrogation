@@ -64,7 +64,7 @@ function CameraManager:update()
 end
 
 function CameraManager:follow(x, y)
-    self.camera:setTranslation(x, y)
+    self.camera:setTranslation(math.round(x), math.round(y))
 end
 
 function CameraManager:clamp()

@@ -116,6 +116,8 @@ function Player:update(dt)
         dash(self, wait)
     end)
 
+    local was_reset = self.is_grounded or self.is_walled
+
     ground_state_update(self)
     wall_state_update(self)
     switch_state(self)
@@ -128,6 +130,10 @@ function Player:update(dt)
     if self.is_grounded or self.is_walled then
         self.dashes = 0
         self.air_jumps = 0
+        
+        if not was_reset then
+            self.can_dash = true
+        end
     end
 
     set_direction(self)

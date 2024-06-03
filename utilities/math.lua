@@ -17,3 +17,7 @@ end
 function math.lerp(a, b, t)
     return a + (b - a) * t
 end
+
+function math.round(n)
+    return math.floor(n + 0.5)
+end
