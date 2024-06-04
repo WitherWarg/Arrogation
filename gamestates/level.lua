@@ -18,8 +18,6 @@ function Level:enter(previous, level_name)
     camera_manager = CameraManager(map_manager, WORLD_SCALE)
 
     pause = false
-
-    love.mouse.setVisible(false)
 end
 
 function Level:update(dt)
@@ -53,8 +51,6 @@ end
 
 function Level:leave()
     self.is_leaving = true
-
-    love.mouse.setVisible(true)
     
     WORLD_SCALE, WORLD_WIDTH, WORLD_HEIGHT = nil, nil, nil
 

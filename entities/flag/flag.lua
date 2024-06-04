@@ -18,6 +18,8 @@ function Flag:init(object)
     self.width, self.height = WIDTH * FLAG_SCALE, HEIGHT * FLAG_SCALE
     self.x, self.y = object.x - self.width/2, object.y - self.height/2
 
+    self.next_level = object.properties.next_level
+
     self.animation = animation:clone()
 end
 
@@ -27,7 +29,7 @@ function Flag:update(dt)
         self.x + self.width/2, self.y + self.height/2,
         'player')
     if #players > 0 then
-        return GS.switch(MainMenu)
+        return GS.switch(LevelTransition, self.next_level)
     end
 
     self.animation:update(dt)

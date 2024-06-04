@@ -1530,7 +1530,9 @@ return {
               height = 0,
               rotation = 0,
               visible = true,
-              properties = {}
+              properties = {
+                ["next_level"] = "forest"
+              }
             }
           }
         }

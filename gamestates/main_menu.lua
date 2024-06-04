@@ -13,11 +13,13 @@ function MainMenu:enter()
         x = WIDTH / 2, y = HEIGHT / 2,
         text = 'Start',
         onPress = function()
-            GS.switch(Level, 'forest')
+            GS.switch(LevelTransition, 'forest')
         end
     }
 
     love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
+
+    love.mouse.setVisible(true)
 end
 
 function MainMenu:update(dt)
@@ -38,6 +40,8 @@ end
 
 function MainMenu:leave()
     start = nil
+
+    love.mouse.setVisible(false)
 end
 
 return MainMenu

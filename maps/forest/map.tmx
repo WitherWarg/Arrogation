@@ -741,6 +741,9 @@
   </objectgroup>
   <objectgroup id="36" name="flag">
    <object id="187" x="895" y="347">
+    <properties>
+     <property name="next_level" value="forest"/>
+    </properties>
     <point/>
    </object>
   </objectgroup>

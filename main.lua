@@ -13,6 +13,7 @@ function love.load()
     local new_image_data = love.image.newImageData("cursor/Colour2/Outline/cursor.png")
     local new_cursor_image = love.mouse.newCursor(new_image_data, 0, 0)
     love.mouse.setCursor(new_cursor_image)
+    love.mouse.setVisible(false)
 
     WIDTH, HEIGHT = love.graphics.getDimensions()
     
@@ -26,7 +27,8 @@ function love.load()
 
     Level = require('gamestates.level')
     MainMenu = require('gamestates.main_menu')
+    LevelTransition = require('gamestates.level_transition')
     
     GS.registerEvents{'enter', 'update', 'draw', 'leave'}
-    return GS.switch(Level, 'forest')
+    return GS.switch(MainMenu)
 end
