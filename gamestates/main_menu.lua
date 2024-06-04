@@ -17,8 +17,6 @@ function MainMenu:enter()
         end
     }
 
-    love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
-
     love.mouse.setVisible(true)
 end
 
@@ -28,6 +26,8 @@ function MainMenu:update(dt)
     timer.update(dt)
 
     start:update()
+
+    love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
 end
 
 function MainMenu:draw()

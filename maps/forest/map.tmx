@@ -583,8 +583,6 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
   </layer>
- </group>
- <group id="29" name="foreplayer">
   <group id="38" name="platforms">
    <layer id="40" name="back" width="90" height="57">
     <data encoding="csv">
@@ -742,7 +740,7 @@
   <objectgroup id="36" name="flag">
    <object id="187" x="895" y="347">
     <properties>
-     <property name="next_level" value="forest"/>
+     <property name="next_level" value="oak_woods"/>
     </properties>
     <point/>
    </object>
