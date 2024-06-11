@@ -267,8 +267,8 @@ return {
           class = "",
           visible = true,
           opacity = 1,
-          offsetx = 0,
-          offsety = 0,
+          offsetx = -32,
+          offsety = -176,
           parallaxx = 1,
           parallaxy = 1,
           properties = {},
@@ -285,7 +285,7 @@ return {
               visible = true,
               opacity = 1,
               offsetx = 16,
-              offsety = -448,
+              offsety = -272,
               parallaxx = 0.5,
               parallaxy = 0.5,
               properties = {},
@@ -361,10 +361,10 @@ return {
               class = "",
               visible = true,
               opacity = 1,
-              offsetx = 224,
-              offsety = -272,
-              parallaxx = 0.8,
-              parallaxy = 0.8,
+              offsetx = 80,
+              offsety = -208,
+              parallaxx = 0.6,
+              parallaxy = 0.6,
               properties = {},
               encoding = "lua",
               data = {
@@ -1516,7 +1516,7 @@ return {
               rotation = 0,
               visible = true,
               properties = {
-                ["next_level"] = "oak_woods"
+                ["next_level"] = "main_menu"
               }
             }
           }

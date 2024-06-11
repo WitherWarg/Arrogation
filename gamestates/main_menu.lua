@@ -13,7 +13,7 @@ function MainMenu:enter()
         x = WIDTH / 2, y = HEIGHT / 2,
         text = 'Start',
         onPress = function()
-            GS.switch(LevelTransition, 'forest')
+            GS.switch(LevelTransition, 'oak_woods')
         end
     }
 
