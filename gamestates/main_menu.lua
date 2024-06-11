@@ -26,12 +26,13 @@ function MainMenu:update(dt)
     timer.update(dt)
 
     start:update()
-
-    love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
 end
 
 function MainMenu:draw()
     love.graphics.push('all')
+
+    love.graphics.setColor(0.41, 0.53, 0.97)
+    love.graphics.rectangle('fill', 0, 0, WIDTH, HEIGHT)
 
     start:draw()
 
