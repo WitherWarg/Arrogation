@@ -270,6 +270,10 @@ end
 
 --#region state updates
 function ground_state_update(self)
+    if self.collider:isDestroyed() then
+        return
+    end
+
     local x, y = self.collider:getPosition()
 
     self.is_grounded = #world:queryRectangleArea(
