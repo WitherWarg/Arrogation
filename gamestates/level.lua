@@ -1,9 +1,6 @@
 local Level = {}
 
-function Level:enter(previous, level_name)
-    self.previous = previous
-    self.is_leaving = false
-
+function Level:enter(_, level_name)
     WORLD_SCALE = 3
     WORLD_WIDTH = WIDTH / WORLD_SCALE
     WORLD_HEIGHT = HEIGHT / WORLD_SCALE
@@ -21,10 +18,6 @@ function Level:enter(previous, level_name)
 end
 
 function Level:update(dt)
-    if self.is_leaving then
-        return
-    end
-
     love.keyboard.update()
 
     if input("pause") then
@@ -49,9 +42,7 @@ function Level:draw()
     camera_manager:draw()
 end
 
-function Level:leave()
-    self.is_leaving = true
-    
+function Level:leave()    
     WORLD_SCALE, WORLD_WIDTH, WORLD_HEIGHT = nil, nil, nil
 
     pause = nil

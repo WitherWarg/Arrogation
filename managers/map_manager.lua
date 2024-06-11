@@ -24,9 +24,7 @@ end
 function MapManager:update(dt)
     for _, active_object in pairs(self.active_objects) do
         for _, object in ipairs(active_object) do
-            if not object.collider or not object.collider:isDestroyed() then
-                object:update(dt)
-            end
+            object:update(dt)
         end
     end
 end
