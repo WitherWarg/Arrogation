@@ -37,7 +37,7 @@ local function makePush( self, layer )
 		love.graphics.translate( self.x + self.offsetX, self.y + self.offsetY )
 		love.graphics.rotate( self.rotation )
 		love.graphics.scale( self.scale * self.aspectRatioScale * layer.scale )
-		love.graphics.translate( -self.translationX * layer.relativeScale, -self.translationY * layer.relativeScale )
+		love.graphics.translate( -self.translationX * layer.relativeScaleX, -self.translationY * layer.relativeScaleY )
 	end
 end
 
@@ -45,7 +45,7 @@ local function addLayer( self, name, scale, flags )
 	local new = {
 		name = name,
 		scale = scale,
-		relativeScale = 1, -- Controls the translation speed
+		relativeScaleX = 1, relativeScaleY = 1, -- Controls the translation speed
 		mode = self.mode,
 	}
 	new.push = makePush( self, new )
@@ -109,12 +109,12 @@ local function newCamera(flags)
 			x, y = x - self.x - self.offsetX, y - self.y - self.offsetY
 			x, y = rotateAboutPoint( x, y, 0, 0, -self.rotation )
 			x, y = x / scaleFactor, y / scaleFactor
-			return x + self.translationX * layer.relativeScale, y + self.translationY * layer.relativeScale
+			return x + self.translationX * layer.relativeScaleX, y + self.translationY * layer.relativeScaleY
 		end,
 		getScreenCoordinates = function( self, x, y, layer )
 			layer = self:getLayer( layer or 'main' )
 			local scaleFactor = self.scale * self.aspectRatioScale * layer.scale
-			x, y = x - self.translationX / layer.relativeScale, y - self.translationY * layer.relativeScale
+			x, y = x - self.translationX / layer.relativeScaleX, y - self.translationY * layer.relativeScaleY
 			x, y = x * scaleFactor, y * scaleFactor
 			x, y = rotateAboutPoint( x, y, 0, 0, self.rotation )
 			x, y = x + self.x + self.offsetX, y + self.y + self.offsetY

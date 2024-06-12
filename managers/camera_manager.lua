@@ -17,7 +17,7 @@ function CameraManager:init(map_manager, scale)
 
     for _, layer in ipairs(map_manager.map.layers) do
         if layer.type == 'tilelayer' then
-            self.camera:addLayer(layer.name, 1, { relativeScale = layer.parallaxx })
+            self.camera:addLayer(layer.name, 1, { relativeScaleX = layer.parallaxx, relativeScaleY = layer.parallaxy })
             for name, active_object in pairs(map_manager.active_objects) do
                 local name_after_dot = string.gsub(string.match(layer.name, "(%..*)$"), "%.", "")
                 if name == name_after_dot then
