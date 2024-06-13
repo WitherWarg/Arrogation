@@ -30,5 +30,5 @@ function love.load()
     LevelTransition = require('gamestates.level_transition')
     
     GS.registerEvents{'enter', 'update', 'draw', 'leave'}
-    return GS.switch(Level, 'forest')
+    return GS.switch(MainMenu)
 end
